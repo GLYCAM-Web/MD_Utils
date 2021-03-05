@@ -23,14 +23,14 @@ internal changes and able to use different sets of inputs.
 
 For example, if you want to run a simulation that:
 * Starts from a pre-minimized structure containing water.
-* Equilibrates the water first,
-* Then equilibrates everything,
+* Relaxes the water first,
+* Then relaxes everything,
 * Then does a production run.
 
 You would copy the file
 _scripts/Run_Multi-Part_Simulation.bash_ 
 and the three mdin files in 
-_inputs/pre-minimized-separate-water-equilibration/_
+_inputs/pre-minimized-separate-water-relaxation/_
 into a directory with your pre-minimized parm7 and rst7 files.
 Then, you edit the Run_Multi-Part_Simulation.bash file as 
 needed for your situation and then run the file.

@@ -1,6 +1,6 @@
 Molecular Dynamics Input (mdin) File Series
 
-The files herein encode a simulation with two separate equilibrations steps
+The files herein encode a simulation with two separate relaxation steps
 followed by a production run.  That makes three parts, and there is one mdin 
 file per part.  These files assume that the system contains a solute and a 
 solvent.  The system might also contain ions.  The files also assume that 
@@ -50,7 +50,7 @@ relative safety.
             the mden file.  Note that these values are not printed so that
             they easily correspond to the coordinates (see ntwx).  However,
             the values in this file are relatively easy to parse for plotting, 
-            so they are convenient for doing quick checks of equilibration 
+            so they are convenient for doing quick checks of relaxation 
             and for tests of certain types of convergence.
 
 A novice researcher might change the following, but with caution.

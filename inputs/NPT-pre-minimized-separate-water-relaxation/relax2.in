@@ -1,4 +1,4 @@
-Water Equilibration Simulation with nPT.
+System Relaxation Simulation with nPT.
 
  # Control section
  &cntrl
@@ -8,19 +8,16 @@ Water Equilibration Simulation with nPT.
   ntx = 1,
   ntp = 1,
   cut = 8.0,
-  ntc = 2, 
+  ntc = 2,
   ntf = 2,
   temp0 = 300.0,
   ntt = 3, 
   gamma_ln = 2,
-  nstlim = 200000, 
+  nstlim = 500000, 
   dt = 0.002,
   ntwx = 10000, 
   ntpr = 100, 
   ntwe = 100,
   ioutfm = 1,
   iwrap = 1,
-  ntr = 1,
-  restraintmask = '!:WAT= & !@H=',
-  restraint_wt = 5.0,
  &end

@@ -71,15 +71,15 @@ export allowOverwrite=Y
 ##
 ##        For example, if left unchanged, this script expects that 
 ##        the mdin files for the three simulations are called:
-##            eq1.in  eq2.in  md.in
+##            relax1.in  relax2.in  md.in
 ##
 declare -a runPrefix
-runPrefix[0]='eq1'
-runPrefix[1]='eq2'
+runPrefix[0]='relax1'
+runPrefix[1]='relax2'
 runPrefix[2]='md'
 declare -a runDescription
-runDescription[0]='Water-only equilibration'
-runDescription[1]='Full system equilibration (no restraints)'
+runDescription[0]='Water-only relaxation'
+runDescription[1]='Full system relaxation (no restraints)'
 runDescription[2]='MD production run'
 export runPrefix runDescription
 ##
