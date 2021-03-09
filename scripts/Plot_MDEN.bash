@@ -63,6 +63,7 @@ fi
 LINE_GREP=$(grep ${ENTRY} ${1})
 LINE=${LINE_GREP:1:1}
 LineWords=(${LINE_GREP})
+
 ## The following is copypasta from: 
 ## https://superuser.com/questions/434507/how-to-find-the-index-of-a-word-in-a-string-in-bash
 cnt=0; 
@@ -70,6 +71,7 @@ for el in "${LineWords[@]}"; do
 	[[ $el == "${ENTRY}" ]] && break
 	((++cnt))
 done
+
 
 TITLE="Data from file ${1} on $(date)"
 XLABEL="Nsteps"

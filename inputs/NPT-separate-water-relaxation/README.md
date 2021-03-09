@@ -1,19 +1,18 @@
 Molecular Dynamics Input (mdin) File Series
 
-The files herein encode a simulation with two separate relaxation steps
-followed by a production run.  That makes three parts, and there is one mdin 
-file per part.  These files assume that the system contains a solute and a 
-solvent.  The system might also contain ions.  The files also assume that 
-the system was built and minimized somewhere else, possibly by one of the 
-builders at [GLYCAM-Web](http://glycam.org).  
+The files herein encode a simulation with a minimization and two separate 
+relaxation steps followed by a production run.  That makes four parts, and 
+there is one mdin file per part.  These files assume that the system 
+contains a solute and a solvent.  The system might also contain ions.  
 
-The three parts of the simulation are:
+The four parts of the simulation are:
 
-1. eq1.in:  Equilibration of the water water molecules and the hydrogen atoms 
+1. min.in:  Full system minimization.
+2. relax1.in:  Relaxation of the water water molecules and the hydrogen atoms 
    only.  During this part of the simulation, the heavy atoms in the solvent, 
    and any ions, if they are present, are held still. 
-2. eq2.in:  Equilibration of the entire system (no restraints on motion).
-3. md.in:  A production run, from which data might be gathered. 
+3. relax2.in:  Relaxation of the entire system (no restraints on motion).
+4. md.in:  A production run, from which data might be gathered. 
 
 Furthermore, these files specify that the system, among other things:
 
@@ -82,7 +81,8 @@ Other trivia:
 
 * ntb     : Largely deprecated, the flag to turn periodic boundaries on or 
             off, and how to set them.  This flag no longer needs to be 
-            explicitly set.  The software will figure out what the value should 
-            be.  Only in certain strange situations should it be set.  The 
-            current recommendation is to not set it.
+            explicitly set: the software will figure out what the value should 
+            be.  Only in certain strange situations should it need to be set.  
+            The current recommendation is to not set it.  However, these files
+            might be used with older AMBER versions, so it is set here.
 

@@ -6,6 +6,7 @@ System Relaxation Simulation with nPT.
   imin = 0,
   irest = 0,
   ntx = 1,
+  ntb = 2,
   ntp = 1,
   cut = 8.0,
   ntc = 2,

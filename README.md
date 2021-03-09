@@ -35,5 +35,5 @@ into a directory with your pre-minimized parm7 and rst7 files.
 Then, you edit the Run_Multi-Part_Simulation.bash file as 
 needed for your situation and then run the file.
 
-You might also find _scripts/Check_Equilibration.bash_ useful.
+You might also find _scripts/Plot_MDEN.bash_ useful.
 

@@ -8,13 +8,21 @@
 ##
 ## A message will tell you when you have finished setting variables.
 #
-## Replace this with your AMBERHOME absolute path
-AMBERHOME=/programs/amber20  
-# AMBERHOME=/programs/amber
+## Tell the script how to get your AMBERHOME:
+## Set thisAMBERHOME to DETECT if you want the script to try to detect it.
+## Otherwise, set thisAMBERHOME to your AMBERHOME absolute path.
+thisAMBERHOME='DETECT'
+#thisAMBERHOME='/path/to/your/amber'
 #
 ## Replace these with the names of your prmtop and inpcrd files
 PRMTOP='mol_min_t3p.parm7'
 INPCRD='mol_min_t3p.rst7'
+#
+## Choose the output format for coordinates
+## NOTE !  Make sure this matches the ntwo entry in your input files.  To use
+##         this script, all files must use the same coordinate output format.
+coordOutputFormat="NetCDF"  ## ntwo=2 - much smaller files; not human readable
+#coordOutputFormat="ASCII"  ## ntwo=1 - larger file sizes; is human readable
 #
 ## Choose either sander or pmemd as your MD engine
 ##    - sander is freely distributed with AmberTools, but isn't fast
@@ -45,9 +53,9 @@ export useCUDA=N
 ##     - No   = do not print the job submisison commands
 ##     - Only = only print the job submisison commands; do NOT actually run 
 ##              the simulations (for troubleshooting)
-export writeCommands=Yes
+#export writeCommands=Yes
 # export writeCommands=No
-# export writeCommands=Only
+ export writeCommands=Only
 ##  
 ## You can change the name of the output file if you like. 
 ## This file will contain a log from the point of view of this script.
@@ -83,6 +91,21 @@ runDescription[1]='Full system relaxation (no restraints)'
 runDescription[2]='MD production run'
 export runPrefix runDescription
 ##
+##
+## If you are so inclined, you can change the output suffix, but these
+## options are pretty standard, so leaving them as-is should be good for
+## most applications.
+if [ "${coordOutputFormat}" == "NetCDF" ] ; then
+	restrtSuffix='restrt.nc'
+	mdSuffix='nc'
+elif [ "${coordOutputFormat}" == "ASCII" ] ; then
+	restrtSuffix='rst7'
+	mdSuffix='mdcrd'
+else
+	echo "Value of coordOutputFormat variable unrecognized.  Exiting."
+	exit
+fi
+##
 ################################################################################
 
 
@@ -99,10 +122,45 @@ echo "Working directory is $(pwd)" >> ${outputFileName}
 
 ##
 # Source needed information from AMBERHOME
-if [ ! -d ${AMBERHOME} ] ; then
-	echo "Cannot find AMBERHOME, given as: ${AMBERHOME}" | tee -a ${outputFileName}
+##
+# First, see if an AMBERHOME is defined in the environment
+if [ "${AMBERHOME}zzz" == "zzz" ] ; then
+	amberhomeDefined='No'
+else
+	amberhomeDefined='Yes'
 fi
-source ${AMBERHOME}/amber.sh
+# If we were instructed to detect AMBERHOME, 
+detectAMBERHOME='No'
+if [ "${thisAMBERHOME}" == "DETECT" ] ; then 
+	detectAMBERHOME='Yes'
+	if [ "${amberhomeDefined}" == "Yes" ] ; then
+		thisAMBERHOME=${AMBERHOME}
+	else
+		echo "Could not Detect AMBERHOME.  Exiting."
+		exit 1
+	fi
+fi
+if [ ! -d ${thisAMBERHOME} ] ; then
+echo "
+!!!!!!!!!!!!!!!  
+Strong Warning 
+!!!!!!!!!!!!!!!  
+Cannot find AMBERHOME.  This is likely to cause problems if this is an attempt 
+to actually run a simulation (as opposed to a test of the script, for example).
+The script thinks that the following is AMBERHOME:
+${thisAMBERHOME}
+" | tee -a ${outputFileName}
+if [ "${detectAMBERHOME}" == "No" ] ; then
+	if [ "${amberhomeDefined}" == "Yes" ] ; then
+		echo "The environment defines AMBERHOME as: ${AMBERHOME}
+		" | tee -a ${outputFileName}
+	fi
+fi
+fi
+export AMBERHOME=${thisAMBERHOME}
+if [ -e ${AMBERHOME}/amber.sh ] ; then
+	source ${AMBERHOME}/amber.sh
+fi
 
 ##
 # Set the contents of checkText according to the MD Engine
@@ -157,7 +215,7 @@ build_run_command() {
 		thisRST=${INPCRD}
 	else
 		lasti=$((thisi-1))
-		thisRST=${runPrefix[${lasti}]}.rst7
+		thisRST=${runPrefix[${lasti}]}.${restrtSuffix}
 	fi
 COMMAND="${mdEngine} \
  -i ${runPrefix[${thisi}]}.in \
@@ -165,8 +223,8 @@ COMMAND="${mdEngine} \
  -e ${runPrefix[${thisi}]}.en \
  -p ${PRMTOP} \
  -c ${thisRST} \
- -r ${runPrefix[${thisi}]}.rst7 \
- -x ${runPrefix[${thisi}]}.nc \
+ -r ${runPrefix[${thisi}]}.${restrtSuffix} \
+ -x ${runPrefix[${thisi}]}.${mdSuffix} \
  -ref ${INPCRD} "
 
 if [ "${useLogFile}" == "Y" ] ; then
