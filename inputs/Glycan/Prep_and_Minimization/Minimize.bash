@@ -9,8 +9,32 @@
 ##
 ################################################################################
 
-LOGFILE='Minimize.log'
-echo "Run log begin on $(date) " > ${LOGFILE}
+LOGFILE='Minimize.log'  ## Log file is very chatty, for tracking problems
+STATUSFILE='build-status.log'  ## Status file is terse, with date/time stamps each line
+write_return_value_info_to_log_status()
+{
+	Val="${1}"  ## the return value
+	Mess="${2}"  ## the action message
+	if [ "${Val}" != "0" ] ; then
+		echo "...${Mess} failed with code ${Val}.  Exiting" >> ${LOGFILE}
+		echo "[ERROR] - $(date) - ${Mess} failed with code ${Val}" >> ${STATUSFILE}
+		exit 1
+	else
+		echo "...${Mess} completed on $(date)" >> ${LOGFILE}
+		echo "[INFO] - $(date) - ${Mess} completed" >> ${STATUSFILE}
+	fi
+}
+run_command_and_log_results()
+{
+	echo "${1} " >> ${LOGFILE}
+        eval "${2}  >> ${LOGFILE} 2>&1"
+	returnValue=$?
+	write_return_value_info_to_log_status "${returnValue}" "${3}"
+}
+
+###  Initialize the log and status files
+echo "Run log begun on $(date) " > ${LOGFILE}
+echo "[INFO] - $(date) - Status log opened." > ${STATUSFILE}
 
 ( 
 command -V srun >/dev/null 2>&1 &&
@@ -18,63 +42,65 @@ command -V srun >/dev/null 2>&1 &&
   echo "This build appears to be running in a Slurm cluster.:" >> ${LOGFILE} 
   echo "The current host is $(hostname):" >> ${LOGFILE} 
   echo "The build will run on these hosts:" >> ${LOGFILE} 
+  echo "[INFO] - $(date) - This job is running in a Slurm cluster." >> ${STATUSFILE}
   srun hostname -s | sort -u >slurm.hosts
   cat slurm.hosts >> ${LOGFILE}
   )
 )
 
-echo "Sourcing amber.sh " > ${LOGFILE}
-source ${AMBERHOME}/amber.sh
-
-echo "Running tleap to generate input files." >> ${LOGFILE}
-tleap -f mol.leapin
-
-echo "Running the Gas-Phase Minimization" >> ${LOGFILE}
-bash Run_Multi-Part_Simulation.bash Gas-Min-Parameters.bash
-returnvalue=$?
-if [ "${returnvalue}" != "0" ] ; then
-	echo "...Gas-Phase Minimization failed.  Exiting" >> ${LOGFILE}
-	exit 1
-else
-	echo "...Gas-Phase Minimization appears to be complete on $(date)" >> ${LOGFILE}
-fi
-
+run_command_and_log_results \
+	"Sourcing amber.sh" \
+	"source ${AMBERHOME}/amber.sh" \
+	"Sourcing of AMBERHOME/amber.sh"
 
 echo "
-Building the solvated systems.
+Building and minimizing the gas-phase system.
 " >> ${LOGFILE}
 
-echo "Running cpptraj to convert to convenient formats" >> ${LOGFILE}
-cpptraj -i min-gas.cpptrajin
+run_command_and_log_results \
+	"Running tleap to generate gas-phase input files." \
+	"tleap -f initial-gas.leapin" \
+	'Gas-phase tleap processing'
 
-echo "Running tleap to build the Tip3P solvated structures" >> ${LOGFILE}
-tleap -f mol-t3p.leapin
-
-echo "Running tleap to build the Tip5P solvated structures" >> ${LOGFILE}
-tleap -f mol-t5p.leapin
+run_command_and_log_results \
+	"Running the Gas-Phase Minimization"  \
+	"bash Run_Multi-Part_Simulation.bash Gas-Min-Parameters.bash" \
+	'Gas-phase minimization'
 
 echo "
-Running the solvated minimizations.
+Building and minimizing the solvated systems.
 " >> ${LOGFILE}
 
-echo "Running the Tip3P-Solvated Minimization" >> ${LOGFILE}
-bash Run_Multi-Part_Simulation.bash T3P-Min-Parameters.bash
-returnvalue=$?
-if [ "${returnvalue}" != "0" ] ; then
-	echo "...T3P Minimization failed.  Exiting" >> ${LOGFILE}
-	exit 1
-else
-	echo "...T3P Minimization appears to be complete on $(date)" >> ${LOGFILE}
-fi
+run_command_and_log_results \
+	"Running cpptraj to convert gas-phase output to convenient formats"  \
+	"cpptraj -i min-gas.cpptrajin" \
+	'Post-gas-phase cpptraj processing'
 
-echo "Running the Tip5P-Solvated Minimization" >> ${LOGFILE}
-bash Run_Multi-Part_Simulation.bash T5P-Min-Parameters.bash
-returnvalue=$?
-if [ "${returnvalue}" != "0" ] ; then
-	echo "...T5P Minimization failed.  Exiting" >> ${LOGFILE}
-	exit 1
-else
-	echo "...T5P Minimization appears to be complete on $(date)" >> ${LOGFILE}
-fi
+echo "
+Working on TIP3P solvated version.
+" >> ${LOGFILE}
 
+run_command_and_log_results \
+	"Running tleap to build the Tip3P solvated structures"  \
+	"tleap -f initial-t3p.leapin" \
+	'Solvent-phase (T3P) tleap processing'
+
+run_command_and_log_results \
+	"Running the Tip3P-Solvated Minimization" \
+	"bash Run_Multi-Part_Simulation.bash T3P-Min-Parameters.bash" \
+	'Solvent-phase (T3P) minimization'
+
+echo "
+Working on TIP5P solvated version.
+" >> ${LOGFILE}
+
+run_command_and_log_results \
+	"Running tleap to build the Tip5P solvated structures"  \
+	"tleap -f initial-t5p.leapin " \
+	'Solvent-phase (T5P) tleap processing'
+
+run_command_and_log_results \
+	"Running the Tip5P-Solvated Minimization" \
+	"bash Run_Multi-Part_Simulation.bash T5P-Min-Parameters.bash" \
+	'Solvent-phase (T5P) minimization'
 

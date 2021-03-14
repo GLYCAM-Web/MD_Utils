@@ -11,12 +11,12 @@
 ################################################################################
 
 thisAMBERHOME='DETECT'
-PRMTOP='mol-t5p.parm7'
-INPCRD='mol-t5p.rst7'
+PRMTOP='initial-t5p.parm7'
+INPCRD='initial-t5p.rst7'
 coordOutputFormat="NetCDF"  ## ntwo=2 - much smaller files; not human readable
 restrtSuffix='restrt.nc'
 mdSuffix='nc'
-outputFileName='t5p_minimization.out'
+outputFileName='t5p_minimization.log'
 
 mdEngine=pmemd
 useMPI=Y
@@ -24,7 +24,7 @@ numProcs=4
 useCUDA=N
 allowOverwrite=N
 
-writeCommands=Only
+writeCommands=Yes
 
 runPrefix[0]='min-t5p'
 runDescription[0]='T5P-solvated minimization'

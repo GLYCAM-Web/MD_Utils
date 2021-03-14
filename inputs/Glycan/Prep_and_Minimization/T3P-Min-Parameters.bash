@@ -11,12 +11,12 @@
 ################################################################################
 
 thisAMBERHOME='DETECT'
-PRMTOP='mol-t3p.parm7'
-INPCRD='mol-t3p.rst7'
+PRMTOP='initial-t3p.parm7'
+INPCRD='initial-t3p.rst7'
 coordOutputFormat="NetCDF"  ## ntwo=2 - much smaller files; not human readable
 restrtSuffix='restrt.nc'
 mdSuffix='nc'
-outputFileName='t3p-minimization.out'
+outputFileName='t3p-minimization.log'
 
 mdEngine=pmemd
 useMPI=Y
@@ -24,7 +24,7 @@ numProcs=4
 useCUDA=N
 allowOverwrite=N
 
-writeCommands=Only
+writeCommands=Yes
 
 runPrefix[0]='min-t3p'
 runDescription[0]='T3P-solvated minimization'

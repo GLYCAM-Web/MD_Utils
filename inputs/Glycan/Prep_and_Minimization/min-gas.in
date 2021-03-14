@@ -1,7 +1,7 @@
 Gas Phase Minimization
  &cntrl
-  imin = 1, maxcyc = 10000, ncyc = 5000,
+  imin = 1, maxcyc = 10000, ncyc = 10000,
   ntb = 0, cut = 20.0,
-  ntxo = 1, ntwr = 10,
+  ntxo = 2, ntwr = 500, ntpr = 500
  &end 
 

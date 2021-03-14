@@ -1,8 +1,0 @@
-verbosity 0
-logfile tleap-mol.log
-source leaprc.GLYCAM_06j-1 
-loadoff structure.off 
-check CONDENSEDSEQUENCE 
-saveamberparm CONDENSEDSEQUENCE mol.parm7 mol.rst7
-quit
-

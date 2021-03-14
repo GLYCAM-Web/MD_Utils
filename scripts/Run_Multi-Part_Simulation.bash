@@ -85,7 +85,7 @@ writeCommands=Yes
 ##  
 ## You can change the name of the output file if you like. 
 ## This file will contain a log from the point of view of this script.
-outputFileName='run_simulation.out'
+outputFileName='run_simulation.log'
 ##  
 ## The allowOverwrite variable controls whether the simulation will 
 ##      overwrite any pre-existing files.
@@ -136,17 +136,22 @@ fi
 ## Normal users should not need to read anything below this line.
 ################################################################################
 ##
+# Read in the Run Parameters file, if it exists.
+FoundRunParameterFile=No
+if [ -f "${GW_RUN_PARAMETERS}" ] ; then
+	FoundRunParameterFile=Yes
+	. ${GW_RUN_PARAMETERS}
+fi
+##
 # Start the ouput file
 echo "Beginning MD simulations on $(date)" | tee ${outputFileName}
 echo "Working directory is $(pwd)" | tee -a ${outputFileName}
-##
-# Read in the Run Parameters file, if it exists.
-if [ -f "${GW_RUN_PARAMETERS}" ] ; then
-	echo "Reading file '${GW_RUN_PARAMETERS}'. " | tee -a ${outputFileName}
-	. ${GW_RUN_PARAMETERS}
+if [ "${FoundRunParameterFile}" == "Yes" ] ; then
+	echo "Using info from file: '${GW_RUN_PARAMETERS}'. " | tee -a ${outputFileName}
 else
 	echo "No file called '${GW_RUN_PARAMETERS}' found.  Using internal defaults. " | tee -a ${outputFileName}
 fi
+##
 ##
 # Source needed information from AMBERHOME
 ##

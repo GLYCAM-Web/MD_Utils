@@ -1,4 +1,4 @@
-parm mol.parm7
+parm initial-gas.parm7
 trajin min-gas.restrt.nc
 trajout min-gas.mol2
 trajout min-gas.pdb

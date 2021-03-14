@@ -1,0 +1,8 @@
+verbosity 0
+logfile initial-gas.leaplog
+source leaprc.GLYCAM_06j-1 
+loadoff structure.off 
+check CONDENSEDSEQUENCE 
+saveamberparm CONDENSEDSEQUENCE initial-gas.parm7 initial-gas.rst7
+quit
+

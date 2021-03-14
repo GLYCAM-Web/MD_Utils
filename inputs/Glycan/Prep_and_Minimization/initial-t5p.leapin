@@ -1,0 +1,12 @@
+verbosity 0
+logfile initial-t5p.leaplog
+source leaprc.GLYCAM_06j-1 
+loadamberparams frcmod.tip5p
+mol=loadmol2 min-gas.mol2
+addIons mol Na+ 0
+addIons mol Cl- 0
+solvateOct mol TIP5PBOX 8.0 iso 0.97
+saveamberparm mol initial-t5p.parm7 initial-t5p.rst7
+savepdb mol initial-t5p.pdb
+quit
+

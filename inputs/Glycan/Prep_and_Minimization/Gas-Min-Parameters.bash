@@ -11,20 +11,20 @@
 ################################################################################
 
 thisAMBERHOME='DETECT'
-PRMTOP='mol.parm7'
-INPCRD='mol.rst7'
+PRMTOP='initial-gas.parm7'
+INPCRD='initial-gas.rst7'
 coordOutputFormat="NetCDF"  ## ntwo=2 - much smaller files; not human readable
 restrtSuffix='restrt.nc'
 mdSuffix='nc'
-outputFileName='gas_phase_minimization.out'
+outputFileName='gas_phase_minimization.log'
 
 mdEngine=sander
-useMPI=Y
-numProcs=2
+useMPI=N
+numProcs=1
 useCUDA=N
 allowOverwrite=N
 
-writeCommands=Only
+writeCommands=Yes
 
 runPrefix[0]='min-gas'
 runDescription[0]='Gas-phase minimization'
