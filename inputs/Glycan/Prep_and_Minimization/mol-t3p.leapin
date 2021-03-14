@@ -1,0 +1,12 @@
+verbosity 0
+logfile tleap-mol-t3p.log
+source leaprc.GLYCAM_06j-1 
+loadamberparams frcmod.ionsjc_tip3p
+mol=loadmol2 min-gas.mol2
+addIons mol Na+ 0
+addIons mol Cl- 0
+solvateOct mol TIP3PBOX 8.0 iso
+saveamberparm mol mol-t3p.parm7 mol-t3p.rst7
+savepdb mol mol-t3p.pdb
+quit
+

@@ -1,6 +1,0 @@
-Constant Volume Minimization
- &cntrl
-  imin = 1, maxcyc = 10000, ncyc = 10000, dt = 0.001 ,
-  ntb = 1, cut = 8.0, ntmin = 1, nscm = 100, dielc = 1 ,
-  ntwr = 1,
- &end 

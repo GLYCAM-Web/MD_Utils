@@ -1,1 +1,23 @@
+##
+####  1.  General patterns to ignore
+##
+*.dum
+*git-ignore-me*
 *run_simulation.out
+
+##
+####  2.  Wildcard patterns for system files
+##
+*~
+*._*
+*.AppleDouble
+*.bash_history
+*.DS_Store
+*.mysql_history
+*.nfs*
+*nohup.out
+*__pycache__*
+*.python_history
+*.swp
+*.viminfo
+

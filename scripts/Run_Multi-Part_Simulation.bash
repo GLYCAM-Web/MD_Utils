@@ -1,13 +1,38 @@
 #!/usr/bin/env bash
 
 ################################################################################
+## File:  Run_Multi-Part_Simulation.bash
+################################################################################
 ##
-## This script will run a series of MD simulations for you using AMBER
+## This script will run one or more MD simulations for you using AMBER
 ##
-## Ensure that these variables are set the way you need them to be.
+## Look below this section to see the script defaults. 
 ##
-## A message will tell you when you have finished setting variables.
-#
+## All defaults can be overridden by specifying new values in a separate file.
+##
+## By default, the script expects to find the file in your current directory 
+## and expects it to be 'Run_Parameters.bash'. 
+##
+## You may change this behavior by:
+##
+##      - Setting the environment variable called 'GW_RUN_PARAMETERS' so 
+##        that it points to whatever file you like.
+##
+##      - Adding the file name (with path if needed) as an argument on the
+##        command line
+##
+if [ "${GW_RUN_PARAMETERS}zzz" == "zzz" ] ; then
+	GW_RUN_PARAMETERS="./Run_Parameters.bash"
+fi
+if [ "${1}zzz" != "zzz" ] ; then
+	GW_RUN_PARAMETERS="${1}"
+fi
+##
+##
+################################################################################
+## Parameters that can be overridden in the Run Parameters file start here.
+################################################################################
+##
 ## Tell the script how to get your AMBERHOME:
 ## Set thisAMBERHOME to DETECT if you want the script to try to detect it.
 ## Otherwise, set thisAMBERHOME to your AMBERHOME absolute path.
@@ -15,8 +40,8 @@ thisAMBERHOME='DETECT'
 #thisAMBERHOME='/path/to/your/amber'
 #
 ## Replace these with the names of your prmtop and inpcrd files
-PRMTOP='mol_min_t3p.parm7'
-INPCRD='mol_min_t3p.rst7'
+PRMTOP='structure.parm7'
+INPCRD='structure.rst7'
 #
 ## Choose the output format for coordinates
 ## NOTE !  Make sure this matches the ntwo entry in your input files.  To use
@@ -28,24 +53,25 @@ coordOutputFormat="NetCDF"  ## ntwo=2 - much smaller files; not human readable
 ##    - sander is freely distributed with AmberTools, but isn't fast
 ##    - pmemd requires an AMBER license (prices are generally reasonable)
 ##      pmemd is much faster than sander, so use it if you have the choice
-export mdEngine=pmemd
-# export mdEngine=sander
+## Note - there can be only one mdEngine for a given call of this script.
+mdEngine=pmemd
+# mdEngine=sander
 ##
 ## Will you be running your simulation in parallel ('useMPI')?
 ## NOTE! This is not the same as using CUDA (below).  It is possible to be
 ##      only parallel, only CUDA, both, or neither.
-export useMPI=Y
-# export useMPI=N
+useMPI=Y
+# useMPI=N
 #
 # If you chose Y for useMPI, specify the number of processors
 # Replace '4' with your number of processors, if that is a different number
-export numProcs=4
+numProcs=4
 ##
 ## Will you be running your simulation using CUDA?
 ## We expect that more users will have ready access to plain MPI than to CUDA,
 ##       so we set the default to be no.
-export useCUDA=N
-# export useCUDA=Y
+useCUDA=N
+# useCUDA=Y
 ##
 ## Would you like this script to print out the job submission commands?
 ## These will be printed to outputFileName, below.
@@ -53,9 +79,9 @@ export useCUDA=N
 ##     - No   = do not print the job submisison commands
 ##     - Only = only print the job submisison commands; do NOT actually run 
 ##              the simulations (for troubleshooting)
-#export writeCommands=Yes
-# export writeCommands=No
- export writeCommands=Only
+writeCommands=Yes
+# writeCommands=No
+# writeCommands=Only
 ##  
 ## You can change the name of the output file if you like. 
 ## This file will contain a log from the point of view of this script.
@@ -65,8 +91,8 @@ outputFileName='run_simulation.out'
 ##      overwrite any pre-existing files.
 ## It is useful to set it to 'N' if you don't want a restarted simulation
 ##      to overwrite files that were already begun. 
-export allowOverwrite=Y
-# export allowOverwrite=N
+allowOverwrite=Y
+# allowOverwrite=N
 ##
 ## Change these if you want to alter the number of consecutive runs and
 ##      their prefixes.  Please also update the descriptive texts.
@@ -82,14 +108,11 @@ export allowOverwrite=Y
 ##            relax1.in  relax2.in  md.in
 ##
 declare -a runPrefix
-runPrefix[0]='relax1'
-runPrefix[1]='relax2'
-runPrefix[2]='md'
+runPrefix[0]='gp_min'
 declare -a runDescription
-runDescription[0]='Water-only relaxation'
-runDescription[1]='Full system relaxation (no restraints)'
-runDescription[2]='MD production run'
-export runPrefix runDescription
+runDescription[0]='Gas-Phase Minimization'
+declare -a runEngine
+runEngine[0]='sander'
 ##
 ##
 ## If you are so inclined, you can change the output suffix, but these
@@ -106,20 +129,24 @@ else
 	exit
 fi
 ##
-################################################################################
-
-
-################################################################################
-##
-## Most users should not need to alter anything below this point. 
 ##
 ################################################################################
-
+## This is the end of the parameters that can be overridden.
+##
+## Normal users should not need to read anything below this line.
+################################################################################
 ##
 # Start the ouput file
-echo "Beginning MD simulations on $(date)" > ${outputFileName}
-echo "Working directory is $(pwd)" >> ${outputFileName}
-
+echo "Beginning MD simulations on $(date)" | tee ${outputFileName}
+echo "Working directory is $(pwd)" | tee -a ${outputFileName}
+##
+# Read in the Run Parameters file, if it exists.
+if [ -f "${GW_RUN_PARAMETERS}" ] ; then
+	echo "Reading file '${GW_RUN_PARAMETERS}'. " | tee -a ${outputFileName}
+	. ${GW_RUN_PARAMETERS}
+else
+	echo "No file called '${GW_RUN_PARAMETERS}' found.  Using internal defaults. " | tee -a ${outputFileName}
+fi
 ##
 # Source needed information from AMBERHOME
 ##
@@ -136,7 +163,7 @@ if [ "${thisAMBERHOME}" == "DETECT" ] ; then
 	if [ "${amberhomeDefined}" == "Yes" ] ; then
 		thisAMBERHOME=${AMBERHOME}
 	else
-		echo "Could not Detect AMBERHOME.  Exiting."
+		echo "Could not Detect AMBERHOME.  Exiting." | tee -a ${outputFileName}
 		exit 1
 	fi
 fi
@@ -157,7 +184,7 @@ if [ "${detectAMBERHOME}" == "No" ] ; then
 	fi
 fi
 fi
-export AMBERHOME=${thisAMBERHOME}
+AMBERHOME=${thisAMBERHOME}
 if [ -e ${AMBERHOME}/amber.sh ] ; then
 	source ${AMBERHOME}/amber.sh
 fi
@@ -173,7 +200,8 @@ elif [ "${mdEngine}" == "sander" ] ; then
 else
 	echo "mdEngine other than pmemd or sander was specified.  Exiting." | tee -a ${outputFileName}
 fi
-echo "Basic mdEngine is ${mdEngine} and the text to check for success is '${checkText}'." | tee -a ${outputFileName}
+echo "
+The mdEngine is ${mdEngine} and the text to check for success is '${checkText}'." | tee -a ${outputFileName}
 
 ##
 # Set the runs to use CUDA if requested
@@ -199,7 +227,9 @@ fi
 ## Tell everyone what the complete command is:
 echo "Complete mdEngine command is '${mdEngine}'." | tee -a ${outputFileName}
 
-echo "There will be ${#runPrefix[@]} phases to this simulation:" | tee -a ${outputFileName}
+echo "
+There will be ${#runPrefix[@]} phases to this simulation:
+" | tee -a ${outputFileName}
 i=0
 while [ "${i}" -lt "${#runPrefix[@]}" ] ; do
 	j=$((i+1))
@@ -225,6 +255,7 @@ COMMAND="${mdEngine} \
  -c ${thisRST} \
  -r ${runPrefix[${thisi}]}.${restrtSuffix} \
  -x ${runPrefix[${thisi}]}.${mdSuffix} \
+ -inf ${runPrefix[${thisi}]}.info \
  -ref ${INPCRD} "
 
 if [ "${useLogFile}" == "Y" ] ; then
@@ -240,7 +271,8 @@ export COMMAND
 i=0
 while [ "${i}" -lt "${#runPrefix[@]}" ] ; do
 	j=$((i+1))
-	echo "Starting phase ${j}" | tee -a ${outputFileName}
+	echo "
+	Starting phase ${j}" | tee -a ${outputFileName}
 	#
 	#  Build the command for this phase
 	build_run_command ${i}
@@ -266,7 +298,7 @@ Something went wrong for run phase $((thisi+1)).
 The simulation cannot continue.  Exiting.
 
 "  | tee -a ${outputFileName}
-			exit
+			exit 1
 		fi
 	fi
 
