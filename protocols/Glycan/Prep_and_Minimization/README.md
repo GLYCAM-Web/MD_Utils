@@ -22,5 +22,16 @@ you should be able to find build info for it in this repo.
 6. The resulting files, as well as all scripts used to generate them, 
    are offered for download on the site.
 
-The script _Minimize.bash_ controls the run.
 
+Required input:  structure.off
+
+Control script:  Minimize.bash
+
+structure.off : 
+    This file should contain a glycan in a reasonable geometry with any
+    major clashes resolved.  This corresponds to step 1, above. 
+    File format:  AMBER OFF
+
+Minimize.bash : 
+    This script performs steps 2-5, above.
+    File format:  BASH
