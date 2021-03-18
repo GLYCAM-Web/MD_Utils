@@ -5,12 +5,20 @@
 ## This file performs the standard system build and minimization for glycans
 ## built using the tools at GLYCAM-Web and associated software.
 ##
-## AMBERHOME must be set as an environment variable.
+## AMBERHOME must be either:
+##     *  set as an environment variable.
+##     *  set in a file called 'Minimize-Parameters.bash'
+##
+## The following two parameters may be overridden in Minimize-Parameters.bash
+LOGFILE='Minimize.log'  ## Log file is very chatty, for tracking problems
+STATUSFILE='build-status.log'  ## Status file is terse, with date/time stamps each line
 ##
 ################################################################################
 
-LOGFILE='Minimize.log'  ## Log file is very chatty, for tracking problems
-STATUSFILE='build-status.log'  ## Status file is terse, with date/time stamps each line
+if [ -f Minimize-Parameters.bash ] ; then
+	. Minimize-Parameters.bash
+fi
+
 write_return_value_info_to_log_status()
 {
 	Val="${1}"  ## the return value
@@ -32,10 +40,12 @@ run_command_and_log_results()
 	write_return_value_info_to_log_status "${returnValue}" "${3}"
 }
 
+
 ###  Initialize the log and status files
 echo "Run log begun on $(date) " > ${LOGFILE}
 echo "[INFO] - $(date) - Status log opened." > ${STATUSFILE}
 
+###  If we seem to be in a Slurm cluster, record some info
 ( 
 command -V srun >/dev/null 2>&1 &&
   ( 
@@ -51,7 +61,7 @@ command -V srun >/dev/null 2>&1 &&
 run_command_and_log_results \
 	"Sourcing amber.sh" \
 	"source ${AMBERHOME}/amber.sh" \
-	"Sourcing of AMBERHOME/amber.sh"
+	"Sourcing of AMBERHOME[=${AMBERHOME}]/amber.sh"
 
 echo "
 Building and minimizing the gas-phase system.

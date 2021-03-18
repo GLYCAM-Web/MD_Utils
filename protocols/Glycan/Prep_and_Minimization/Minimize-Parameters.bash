@@ -1,0 +1,1 @@
+AMBERHOME=/programs/amber
