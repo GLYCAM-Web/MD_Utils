@@ -129,6 +129,19 @@ else
 	exit
 fi
 ##
+## Check to see if we are just testing the overall workflow.
+## This can be set using the input file as described above.
+## It can also be set using the environment variable MDUtilsTestRunWorkflow
+## If MDUtilsTestRunWorkflow disagrees with testWorkflow, the
+## value assigned to MDUtilsTestRunWorkflow will be used.
+##
+## If set, the script will set:
+##               maxcyc, ncyc, ntwr and nstlim to 1.
+## WARNING: 
+##       It will do this using sed.  The input files will be changed in place.  
+##    
+testWorkflow=No
+#testWorkflow=Yes
 ##
 ################################################################################
 ## This is the end of the parameters that can be overridden.
@@ -142,6 +155,9 @@ if [ -f "${GW_RUN_PARAMETERS}" ] ; then
 	FoundRunParameterFile=Yes
 	. ${GW_RUN_PARAMETERS}
 fi
+if [ "${MDUtilsTestRunWorkflow}" == "Yes" ] ; then
+	testWorkflow=Yes
+fi
 ##
 # Start the ouput file
 echo "Beginning MD simulations on $(date)" | tee ${outputFileName}
@@ -151,6 +167,7 @@ if [ "${FoundRunParameterFile}" == "Yes" ] ; then
 else
 	echo "No file called '${GW_RUN_PARAMETERS}' found.  Using internal defaults. " | tee -a ${outputFileName}
 fi
+
 ##
 ##
 # Source needed information from AMBERHOME
@@ -281,6 +298,12 @@ while [ "${i}" -lt "${#runPrefix[@]}" ] ; do
 	#
 	#  Build the command for this phase
 	build_run_command ${i}
+	if [ "${testWorkflow}" == "Yes" ] ; then
+		sed -i s/maxcyc\ *=\ *[1-9][0-9]*/maxcyc\ =\ 1/ ${runPrefix[${i}]}.in 
+		sed -i s/ncyc\ *=\ *[1-9][0-9]*/ncyc\ =\ 1/ ${runPrefix[${i}]}.in 
+		sed -i s/nstlim\ *=\ *[1-9][0-9]*/nstlim\ =\ 1/ ${runPrefix[${i}]}.in 
+		sed -i s/ntwr\ *=\ *[1-9][0-9]*/ntwr\ =\ 1/ ${runPrefix[${i}]}.in 
+	fi
 	#
 	#  Write it to a file if desired
 	if [ "${writeCommands}" != "No" ] ; then

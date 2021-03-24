@@ -2,21 +2,39 @@
 
 ################################################################################
 ##
-## This file performs the standard system build and minimization for glycans
+## This file performs the standard build and minimization for glycans
 ## built using the tools at GLYCAM-Web and associated software.
 ##
 ## AMBERHOME must be either:
 ##     *  set as an environment variable.
 ##     *  set in a file called 'Minimize-Parameters.bash'
 ##
-## The following two parameters may be overridden in Minimize-Parameters.bash
+## The following parameters may be overridden in Minimize-Parameters.bash
 LOGFILE='Minimize.log'  ## Log file is very chatty, for tracking problems
 STATUSFILE='build-status.log'  ## Status file is terse, with date/time stamps each line
+##
+## The following parameters may be overridden:
+##     *  in Minimize-Parameters.bash
+##     *  by setting an environment variable.
+##           Note that the environment variable has a different name.
+##
+# Set this one to 'Yes' if you don't want to perform a full simulation but
+# just want to make sure the workflow functions.  This makes the MD sims only
+# run for a single step each.
+testWorkflow=No   ## Environment variable:  MDUtilsTestRunWorkflow
+# testWorkflow=Yes   
 ##
 ################################################################################
 
 if [ -f Minimize-Parameters.bash ] ; then
 	. Minimize-Parameters.bash
+fi
+# Pass workflow information along if needed
+if [ "${MDUtilsTestRunWorkflow}" == "Yes" ] ; then
+	export MDUtilsTestRunWorkflow=Yes
+fi
+if [ "${testWorkflow}" == "Yes" ] ; then
+	export MDUtilsTestRunWorkflow=Yes
 fi
 
 write_return_value_info_to_log_status()
@@ -100,6 +118,11 @@ run_command_and_log_results \
 	"bash Run_Multi-Part_Simulation.bash T3P-Min-Parameters.bash" \
 	'Solvent-phase (T3P) minimization'
 
+run_command_and_log_results \
+	"Running cpptraj to convert t3p-solvated output to convenient formats"  \
+	"cpptraj -i min-t3p.cpptrajin" \
+	'Post-t3p-solvated cpptraj processing'
+
 echo "
 Working on TIP5P solvated version.
 " >> ${LOGFILE}
@@ -113,4 +136,9 @@ run_command_and_log_results \
 	"Running the Tip5P-Solvated Minimization" \
 	"bash Run_Multi-Part_Simulation.bash T5P-Min-Parameters.bash" \
 	'Solvent-phase (T5P) minimization'
+
+run_command_and_log_results \
+	"Running cpptraj to convert t5p-solvated output to convenient formats"  \
+	"cpptraj -i min-t5p.cpptrajin" \
+	'Post-t5p-solvated cpptraj processing'
 
