@@ -4,6 +4,7 @@
 *.dum
 *git-ignore-me*
 *run_simulation.out
+*VERSIONS.sh
 
 ##
 ####  2.  Wildcard patterns for system files
