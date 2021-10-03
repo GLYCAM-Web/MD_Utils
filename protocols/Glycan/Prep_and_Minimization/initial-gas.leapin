@@ -2,6 +2,12 @@ verbosity 0
 logfile initial-gas.leaplog
 source leaprc.GLYCAM_06j-1 
 loadoff structure.off 
+## 
+## The term CONDENSEDSEQUENCE is defined in the file structure.off
+##     at the very top of the file.  The term is used throughout
+##     the file as well.  If your off file uses a different name/label
+##     for your structure, then you should change the next two 
+##     lines accordingly.
 check CONDENSEDSEQUENCE 
 saveamberparm CONDENSEDSEQUENCE initial-gas.parm7 initial-gas.rst7
 quit
