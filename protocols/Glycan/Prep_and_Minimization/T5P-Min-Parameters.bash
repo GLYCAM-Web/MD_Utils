@@ -11,8 +11,8 @@
 ################################################################################
 
 thisAMBERHOME='DETECT'
-PRMTOP='initial-t5p.parm7'
-INPCRD='initial-t5p.rst7'
+PRMTOP='unminimized-t5p.parm7'
+INPCRD='unminimized-t5p.rst7'
 coordOutputFormat="NetCDF"  ## ntwo=2 - much smaller files; not human readable
 restrtSuffix='restrt.nc'
 mdSuffix='nc'
