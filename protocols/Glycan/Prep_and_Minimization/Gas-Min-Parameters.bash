@@ -11,8 +11,8 @@
 ################################################################################
 
 thisAMBERHOME='DETECT'
-PRMTOP='initial-gas.parm7'
-INPCRD='initial-gas.rst7'
+PRMTOP='unminimized-gas.parm7'
+INPCRD='unminimized-gas.rst7'
 coordOutputFormat="NetCDF"  ## ntwo=2 - much smaller files; not human readable
 restrtSuffix='restrt.nc'
 mdSuffix='nc'

@@ -87,7 +87,7 @@ Building and minimizing the gas-phase system.
 
 run_command_and_log_results \
 	"Running tleap to generate gas-phase input files." \
-	"tleap -f initial-gas.leapin" \
+	"tleap -f unminimized-gas.leapin" \
 	'Gas-phase tleap processing'
 
 run_command_and_log_results \
@@ -96,7 +96,7 @@ run_command_and_log_results \
 	'Gas-phase minimization'
 
 echo "
-Building and minimizing the solvated systems.
+NOT building and minimizing the solvated systems.
 " >> ${LOGFILE}
 
 run_command_and_log_results \
@@ -110,18 +110,18 @@ Working on TIP3P solvated version.
 
 run_command_and_log_results \
 	"Running tleap to build the Tip3P solvated structures"  \
-	"tleap -f initial-t3p.leapin" \
+	"tleap -f unminimized-t3p.leapin" \
 	'Solvent-phase (T3P) tleap processing'
 
-run_command_and_log_results \
-	"Running the Tip3P-Solvated Minimization" \
-	"bash Run_Multi-Part_Simulation.bash T3P-Min-Parameters.bash" \
-	'Solvent-phase (T3P) minimization'
+#run_command_and_log_results \
+#	"Running the Tip3P-Solvated Minimization" \
+#	"bash Run_Multi-Part_Simulation.bash T3P-Min-Parameters.bash" \
+#	'Solvent-phase (T3P) minimization'
 
-run_command_and_log_results \
-	"Running cpptraj to convert t3p-solvated output to convenient formats"  \
-	"cpptraj -i min-t3p.cpptrajin" \
-	'Post-t3p-solvated cpptraj processing'
+#run_command_and_log_results \
+#	"Running cpptraj to convert t3p-solvated output to convenient formats"  \
+#	"cpptraj -i min-t3p.cpptrajin" \
+#	'Post-t3p-solvated cpptraj processing'
 
 echo "
 Working on TIP5P solvated version.
@@ -129,16 +129,19 @@ Working on TIP5P solvated version.
 
 run_command_and_log_results \
 	"Running tleap to build the Tip5P solvated structures"  \
-	"tleap -f initial-t5p.leapin " \
+	"tleap -f unminimized-t5p.leapin " \
 	'Solvent-phase (T5P) tleap processing'
 
-run_command_and_log_results \
-	"Running the Tip5P-Solvated Minimization" \
-	"bash Run_Multi-Part_Simulation.bash T5P-Min-Parameters.bash" \
-	'Solvent-phase (T5P) minimization'
+#run_command_and_log_results \
+#	"Running the Tip5P-Solvated Minimization" \
+#	"bash Run_Multi-Part_Simulation.bash T5P-Min-Parameters.bash" \
+#	'Solvent-phase (T5P) minimization'
 
-run_command_and_log_results \
-	"Running cpptraj to convert t5p-solvated output to convenient formats"  \
-	"cpptraj -i min-t5p.cpptrajin" \
-	'Post-t5p-solvated cpptraj processing'
+#run_command_and_log_results \
+#	"Running cpptraj to convert t5p-solvated output to convenient formats"  \
+#	"cpptraj -i min-t5p.cpptrajin" \
+#	'Post-t5p-solvated cpptraj processing'
 
+echo "
+Got to end of $0
+" >> ${LOGFILE}
