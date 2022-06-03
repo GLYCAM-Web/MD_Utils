@@ -4,7 +4,16 @@ wishing to run molecular dynamics simulatons.  These utilities are made
 to work well with downloads from GLYCAM-Web, but they should be usable
 in other situations, possibly with minor adjustments.
 
-## Organization 
+# Used by [GLYCAM-Web](https/glycam.org)
+
+These are the scripts used by GLYCAM-Web in its molecular modeling services.
+
+# Funding Sources
+
+We are very grateful to our funders.  
+[Please check them out!](https://github.com/GLYCAM-Web/website/blob/master/funding.md)
+
+# Organization 
 
 We use directories to organize things.
 
