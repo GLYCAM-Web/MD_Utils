@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -J helpRob
+#SBATCH -J JOB_NAME
 #SBATCH --get-user-env
 #SBATCH --nodes=1
 #SBATCH --tasks-per-node=28
@@ -10,9 +10,7 @@ srun hostname -s | sort -u >slurm.hosts
 export pmemd="mpirun -np 28 $AMBERHOME/bin/pmemd.MPI"
 wallclock="Total wall time"
 
-systemName=GH38_Man2_ions_Sol
-topologyFile=$systemName.prmtop
-initialPosition=$systemName.rst7
+systemName=SYSTEM_NAME
 
 #step 1
 $pmemd -O -i 1.min.in -o 1.min.o -p $systemName.prmtop -c $systemName.rst7 -r 1.min.rst7 -ref $systemName.rst7

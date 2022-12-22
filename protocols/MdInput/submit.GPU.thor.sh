@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -J RobAllGpu
+#SBATCH -J JOB_NAME
 #SBATCH --get-user-env
 #SBATCH --nodes=1
 #SBATCH --tasks-per-node=1
@@ -8,7 +8,7 @@
 source /etc/profile.d/modules.sh
 export pmemd="srun $AMBERHOME/bin/pmemd.cuda "
 
-systemName=GH38_Man2_ions_Sol
+systemName=SYSTEM_NAME
 
 #step 1
 $pmemd -O -i 1.min.in -o 1.min.o -p $systemName.prmtop -c $systemName.rst7 -r 1.min.rst7 -ref $systemName.rst7
