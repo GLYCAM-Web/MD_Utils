@@ -18,6 +18,6 @@
   ioutfm = 1,
   iwrap = 0,
   ntr = 1,
-  restraintmask = '@CA,C,O,N | @%Cg,Os',
+  restraintmask = '@CA,C,O,N | @%Cg,Os,Cy,Oy',
   restraint_wt = 0.5,
  &end

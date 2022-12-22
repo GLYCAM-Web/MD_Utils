@@ -3,7 +3,6 @@
   maxcyc = 10000, 
   ncyc = 5000,
   cut = 8.0,
-  ntxo = 2, 
   ntwr = 1000, 
   ntpr = 1000,
   ntr = 1,
