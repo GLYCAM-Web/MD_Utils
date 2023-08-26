@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+mdEngine='pmemd'
+useMPI='Y'
+numProcs='4'
+useCUDA='N'
+allowOverwrite='N'
+
+MDUtilsTestRunWorkflow='Yes'
+
+#writeCommands=Only
+#ReferenceCoordinates='NONE'
+
+#for i in ${RunParts[@]} ; do 
+#	echo "${i}"
+#	echo "${Prefix[${i}]}"
+#	echo "${Description[${i}]}"
+#	if [ "${ReferenceCoordinates}" == "NONE" ] ; then
+#		echo "There are no ReferenceCoordinates defined."
+#	else 
+#		echo "${ReferenceCoordinates[${i}]}"
+#	fi
+#done

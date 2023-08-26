@@ -277,6 +277,9 @@ for part in ${RunParts[@]} ; do
 		sed -i s/maxcyc\ *=\ *[1-9][0-9]*/maxcyc\ =\ 2/ ${Prefix[${part}]}.in 
 		sed -i s/ncyc\ *=\ *[1-9][0-9]*/ncyc\ =\ 2/ ${Prefix[${part}]}.in 
 		sed -i s/nstlim\ *=\ *[1-9][0-9]*/nstlim\ =\ 2/ ${Prefix[${part}]}.in 
+		sed -i s/ntpr\ *=\ *[1-9][0-9]*/ntpr\ =\ 2/ ${Prefix[${part}]}.in 
+		sed -i s/ntwe\ *=\ *[1-9][0-9]*/ntwe\ =\ 2/ ${Prefix[${part}]}.in 
+		sed -i s/ntwx\ *=\ *[1-9][0-9]*/ntwx\ =\ 2/ ${Prefix[${part}]}.in 
 		sed -i -E s/ntwr\ *=\ *-?[1-9][0-9]*/ntwr\ =\ 2/ ${Prefix[${part}]}.in 
 	fi
 	#
