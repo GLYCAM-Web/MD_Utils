@@ -6,20 +6,26 @@
 ##
 ## This script will run one or more MD simulations for you using AMBER
 ##
-## Look below this section to see the script defaults. 
+## This script expects to find run information in a file called:
 ##
-## All defaults can be overridden by specifying new values in a separate file.
+## 	Run_Parameters.bash
 ##
-## By default, the script expects to find the file in your current directory 
-## and expects it to be 'Run_Parameters.bash'. 
+## ...in your current directory 
 ##
-## You may change this behavior by:
+## You may change the filename by:
 ##
 ##      - Setting the environment variable called 'GW_RUN_PARAMETERS' so 
 ##        that it points to whatever file you like.
 ##
 ##      - Adding the file name (with path if needed) as an argument on the
 ##        command line
+##
+## Additionally, you may override entries in Run_Parameters.bash by creating a
+## file called Local_Run_Parameters.bash
+##
+## Documentation of the file Run_Parameters.bash can be found in the file:
+##
+##	scripts/Example_Run_Parameters.bash
 ##
 if [ "${GW_RUN_PARAMETERS}zzz" == "zzz" ] ; then
 	GW_RUN_PARAMETERS="./Run_Parameters.bash"
@@ -30,94 +36,27 @@ fi
 ##
 ##
 ################################################################################
-## Parameters that can be overridden in the Run Parameters file start here.
+## Some parameters must be declared.  See the Example_Run_Parameters.bash file.
 ################################################################################
 ##
-## Tell the script how to get your AMBERHOME:
-## Set thisAMBERHOME to DETECT if you want the script to try to detect it.
-## Otherwise, set thisAMBERHOME to your AMBERHOME absolute path.
+################################################################################
+## Parameters that have defaults start here.  These can be overridden.
+################################################################################
+##
+##
+ReferenceCoordinates='NONE'
 thisAMBERHOME='DETECT'
-#thisAMBERHOME='/path/to/your/amber'
-#
-## Replace these with the names of your prmtop and inpcrd files
 PRMTOP='structure.parm7'
 INPCRD='structure.rst7'
-#
-## Choose the output format for coordinates
-## NOTE !  Make sure this matches the ntwo entry in your input files.  To use
-##         this script, all files must use the same coordinate output format.
-coordOutputFormat="NetCDF"  ## ntwo=2 - much smaller files; not human readable
-#coordOutputFormat="ASCII"  ## ntwo=1 - larger file sizes; is human readable
-#
-## Choose either sander or pmemd as your MD engine
-##    - sander is freely distributed with AmberTools, but isn't fast
-##    - pmemd requires an AMBER license (prices are generally reasonable)
-##      pmemd is much faster than sander, so use it if you have the choice
-## Note - there can be only one mdEngine for a given call of this script.
+coordOutputFormat="NetCDF"  
 mdEngine=pmemd
-# mdEngine=sander
-##
-## Will you be running your simulation in parallel ('useMPI')?
-## NOTE! This is not the same as using CUDA (below).  It is possible to be
-##      only parallel, only CUDA, both, or neither.
 useMPI=Y
-# useMPI=N
-#
-# If you chose Y for useMPI, specify the number of processors
-# Replace '4' with your number of processors, if that is a different number
 numProcs=4
-##
-## Will you be running your simulation using CUDA?
-## We expect that more users will have ready access to plain MPI than to CUDA,
-##       so we set the default to be no.
 useCUDA=N
-# useCUDA=Y
-##
-## Would you like this script to print out the job submission commands?
-## These will be printed to outputFileName, below.
-##     - Yes  = print the job submisison commands
-##     - No   = do not print the job submisison commands
-##     - Only = only print the job submisison commands; do NOT actually run 
-##              the simulations (for troubleshooting)
 writeCommands=Yes
-# writeCommands=No
-# writeCommands=Only
-##  
-## You can change the name of the output file if you like. 
-## This file will contain a log from the point of view of this script.
-outputFileName='run_simulation.log'
-##  
-## The allowOverwrite variable controls whether the simulation will 
-##      overwrite any pre-existing files.
-## It is useful to set it to 'N' if you don't want a restarted simulation
-##      to overwrite files that were already begun. 
+outputFileName='details.log'
+statusFileName='status.log'
 allowOverwrite=Y
-# allowOverwrite=N
-##
-## Change these if you want to alter the number of consecutive runs and
-##      their prefixes.  Please also update the descriptive texts.
-##
-## NOTE - these prefixes are important, and your filenames must match.
-##
-##        Make sure that your run control ('mdin') files are named like:
-##
-##                  runPrefix[i].in
-##
-##        For example, if left unchanged, this script expects that 
-##        the mdin files for the three simulations are called:
-##            relax1.in  relax2.in  md.in
-##
-declare -a runPrefix
-runPrefix[0]='gp_min'
-declare -a runDescription
-runDescription[0]='Gas-Phase Minimization'
-declare -a runEngine
-runEngine[0]='sander'
-##
-##
-## If you are so inclined, you can change the output suffix, but these
-## options are pretty standard, so leaving them as-is should be good for
-## most applications.
 if [ "${coordOutputFormat}" == "NetCDF" ] ; then
 	restrtSuffix='restrt.nc'
 	mdSuffix='nc'
@@ -128,45 +67,57 @@ else
 	echo "Value of coordOutputFormat variable unrecognized.  Exiting."
 	exit
 fi
-##
-## Check to see if we are just testing the overall workflow.
-## This can be set using the input file as described above.
-## It can also be set using the environment variable MDUtilsTestRunWorkflow
-## If MDUtilsTestRunWorkflow disagrees with testWorkflow, the
-## value assigned to MDUtilsTestRunWorkflow will be used.
-##
-## If set, the script will set:
-##               maxcyc, ncyc, ntwr and nstlim to 1.
-## WARNING: 
-##       It will do this using sed.  The input files will be changed in place.  
-##    
 testWorkflow=No
-#testWorkflow=Yes
+##
+##
 ##
 ################################################################################
-## This is the end of the parameters that can be overridden.
+## This is the end of the parameters that have defaults.
 ##
-## Normal users should not need to read anything below this line.
+## Normal users should not need to read or change anything below this line.
 ################################################################################
-##
-# Read in the Run Parameters file, if it exists.
-FoundRunParameterFile=No
+
+################################################################################
+echo "$(date) : Simulation setup is starting." > ${statusFileName}
+# Read in the Run Parameters file
 if [ -f "${GW_RUN_PARAMETERS}" ] ; then
-	FoundRunParameterFile=Yes
 	. ${GW_RUN_PARAMETERS}
+else
+	echo "The run parameters file, '${GW_RUN_PARAMETERS}', was not found."
+	echo "This file must be present. Exiting."
+	exit 1
 fi
 if [ "${MDUtilsTestRunWorkflow}" == "Yes" ] ; then
 	testWorkflow=Yes
+fi
+echo "TEST WORKFLOW IS: ${testWorkflow}"
+##
+################################################################################
+## Checking for parameters that must be declared.
+weshouldexit="No"
+if [ "${RunParts}zzz" == "zzz" ] ; then
+	echo "RunParts must be declared."
+	weshouldexit="Yes"
+fi
+for part in ${RunParts[@]} ; do
+	if [ "${Prefix[${part}]}zzz" == "zzz" ] ; then
+		echo "The Prefix for part ${part} must be declared."
+		weshouldexit="Yes"
+	fi
+	if [ "${Description[${part}]}zzz" == "zzz" ] ; then
+		echo "The Description for part ${part} must be declared."
+		weshouldexit="Yes"
+	fi
+done
+if [ "${weshouldexit}" == "Yes" ] ; then
+	echo "Exiting now."
+	exit 1
 fi
 ##
 # Start the ouput file
 echo "Beginning MD simulations on $(date)" | tee ${outputFileName}
 echo "Working directory is $(pwd)" | tee -a ${outputFileName}
-if [ "${FoundRunParameterFile}" == "Yes" ] ; then
-	echo "Using info from file: '${GW_RUN_PARAMETERS}'. " | tee -a ${outputFileName}
-else
-	echo "No file called '${GW_RUN_PARAMETERS}' found.  Using internal defaults. " | tee -a ${outputFileName}
-fi
+echo "Using info from file: '${GW_RUN_PARAMETERS}'. " | tee -a ${outputFileName}
 
 ##
 ##
@@ -246,63 +197,87 @@ if [ "${allowOverwrite}" == "Y" ] ; then
 	mdEngine="${mdEngine} -O "
 fi
 
-## Tell everyone what the complete command is:
+
+## Tell everyone what the complete mdEngine command is:
 echo "Complete mdEngine command is '${mdEngine}'." | tee -a ${outputFileName}
 
+## See if we need to provide reference coordinates for restraints
+if [ "${ReferenceCoordinates}" != "NONE" ] ; then
+	useRefCoords="Y"
+fi
+
 echo "
-There will be ${#runPrefix[@]} phases to this simulation:
+There will be ${#RunParts[@]} phases to this simulation:
 " | tee -a ${outputFileName}
-i=0
-while [ "${i}" -lt "${#runPrefix[@]}" ] ; do
-	j=$((i+1))
-	echo "Phase ${j} has prefix ${runPrefix[${i}]} and is described as: ${runDescription[${i}]}" | tee -a ${outputFileName}
-	i=${j}
+
+
+declare -A Commands
+thisRestart="${INPCRD}"
+i=1
+for part in "${RunParts[@]}" ; do
+	echo """Phase ${i} 
+	- is called ${part} 
+	- has prefix ${Prefix[${part}]} 
+	- is described as: ${Description[${part}]}""" | tee -a ${outputFileName}
+	i=$((i+1))
+
+	COMMAND="${mdEngine} \
+ -i ${Prefix[${part}]}.in \
+ -o ${Prefix[${part}]}.o \
+ -e ${Prefix[${part}]}.en \
+ -p ${PRMTOP} \
+ -c ${thisRestart} \
+ -r ${Prefix[${part}]}.${restrtSuffix} \
+ -x ${Prefix[${part}]}.${mdSuffix} \
+ -inf ${Prefix[${part}]}.info "
+
+	if [ "${useLogFile}" == "Y" ] ; then
+		COMMAND="${COMMAND} -l ${Prefix[${part}]}.log "
+	fi
+
+	if [ "${useRefCoords}" == "Y" ] ; then
+		if [ "${ReferenceCoordinates[${part}]}" != "NONE" ] ; then
+			if [ "${ReferenceCoordinates[${part}]}" == "Initial" ] ; then
+				thisRefCoords="${INPCRD}"
+			else
+				thisRefPart="${ReferenceCoordinates[${part}]}"
+				thisRefCoords="${Prefix[${thisRefPart}]}.${restrtSuffix}"
+			fi
+			COMMAND="${COMMAND} -ref ${thisRefCoords}"
+		fi
+	fi
+
+	Commands[${part}]="${COMMAND}"
+	thisRestart=${Prefix[${part}]}.${restrtSuffix}
 done
 
-## build_run_command phase-index 
-#    phase-index starts with zero
-build_run_command() {
-	thisi=${1}
-	if [ "${thisi}" == "0" ] ; then
-		thisRST=${INPCRD}
-	else
-		lasti=$((thisi-1))
-		thisRST=${runPrefix[${lasti}]}.${restrtSuffix}
-	fi
-COMMAND="${mdEngine} \
- -i ${runPrefix[${thisi}]}.in \
- -o ${runPrefix[${thisi}]}.o \
- -e ${runPrefix[${thisi}]}.en \
- -p ${PRMTOP} \
- -c ${thisRST} \
- -r ${runPrefix[${thisi}]}.${restrtSuffix} \
- -x ${runPrefix[${thisi}]}.${mdSuffix} \
- -inf ${runPrefix[${thisi}]}.info \
- -ref ${INPCRD} "
-
-if [ "${useLogFile}" == "Y" ] ; then
-COMMAND="${COMMAND} \
- -l ${runPrefix[${thisi}]}.log "
+#for part in ${RunParts[@]} ; do
+#	echo "This is the command for part ${part}"
+#	echo "${Commands[${part}]}"
+#done
+#
+#echo "REMOVE ME"
+#exit
+echo "$(date) : Simulation setup is complete." >> ${statusFileName}
+if [ "${writeCommands}" != "Only" ] ; then
+	echo "$(date) : Starting the ${#RunParts[@]} phases of this simulation." >> ${statusFileName}
+else
+	echo "$(date) : Writing commands only for the ${#RunParts[@]} phases of this simulation." >> ${statusFileName}
 fi
-export COMMAND
-}
-
 
 ##  Do the runs
 #
-i=0
-while [ "${i}" -lt "${#runPrefix[@]}" ] ; do
-	j=$((i+1))
+for part in ${RunParts[@]} ; do
 	echo "
-	Starting phase ${j}" | tee -a ${outputFileName}
-	#
-	#  Build the command for this phase
-	build_run_command ${i}
+	Starting phase ${part}" | tee -a ${outputFileName}
+
+	COMMAND="${Commands[${part}]}"
+	
 	if [ "${testWorkflow}" == "Yes" ] ; then
-		sed -i s/maxcyc\ *=\ *[1-9][0-9]*/maxcyc\ =\ 1/ ${runPrefix[${i}]}.in 
-		sed -i s/ncyc\ *=\ *[1-9][0-9]*/ncyc\ =\ 1/ ${runPrefix[${i}]}.in 
-		sed -i s/nstlim\ *=\ *[1-9][0-9]*/nstlim\ =\ 1/ ${runPrefix[${i}]}.in 
-		sed -i s/ntwr\ *=\ *[1-9][0-9]*/ntwr\ =\ 1/ ${runPrefix[${i}]}.in 
+		sed -i s/maxcyc\ *=\ *[1-9][0-9]*/maxcyc\ =\ 2/ ${Prefix[${part}]}.in 
+		sed -i s/ncyc\ *=\ *[1-9][0-9]*/ncyc\ =\ 2/ ${Prefix[${part}]}.in 
+		sed -i s/nstlim\ *=\ *[1-9][0-9]*/nstlim\ =\ 2/ ${Prefix[${part}]}.in 
+		sed -i -E s/ntwr\ *=\ *-?[1-9][0-9]*/ntwr\ =\ 2/ ${Prefix[${part}]}.in 
 	fi
 	#
 	#  Write it to a file if desired
@@ -316,20 +291,22 @@ while [ "${i}" -lt "${#runPrefix[@]}" ] ; do
 	#
 	#  Run the command unless told not to 
 	if [ "${writeCommands}" != "Only" ] ; then
+		echo "$(date) : Starting phase ${part}." >> ${statusFileName}
 		eval ${COMMAND}
 		#
 		# Check if the command worked
-		if ! grep -q "$wallclock" ${runPrefix[${i}]}.o ; then
+		if ! grep -q "$wallclock" ${Prefix[${part}]}.o ; then
 			echo "
 
-Something went wrong for run phase $((thisi+1)).
+Something went wrong for run phase ${part}.
 The simulation cannot continue.  Exiting.
 
 "  | tee -a ${outputFileName}
+			echo "$(date) : Simulation has failed on phase ${part}." >> ${statusFileName}
 			exit 1
 		fi
+		echo "$(date) : Phase ${part} finished normally." >> ${statusFileName}
 	fi
 
-	i=${j}
 done
 

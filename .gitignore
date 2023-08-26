@@ -6,6 +6,7 @@
 *run_simulation.out
 *VERSIONS.sh
 protocols/Glycan/Prep_and_Minimization/Minimize-Parameters.bash
+*Local_Run_Parameters.bash
 
 ##
 ####  2.  Wildcard patterns for system files
