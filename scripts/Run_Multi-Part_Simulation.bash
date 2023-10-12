@@ -85,6 +85,7 @@ if [ -f "${GW_RUN_PARAMETERS}" ] ; then
 else
 	echo "The run parameters file, '${GW_RUN_PARAMETERS}', was not found."
 	echo "This file must be present. Exiting."
+	echo "$(date) : Simulation ended with GW_RUN_PARAMETERS error" >> ${statusFileName}
 	exit 1
 fi
 if [ "${MDUtilsTestRunWorkflow}" == "Yes" ] ; then
@@ -111,6 +112,7 @@ for part in ${RunParts[@]} ; do
 done
 if [ "${weshouldexit}" == "Yes" ] ; then
 	echo "Exiting now."
+	echo "$(date) : Simulation ended with declarations error" >> ${statusFileName}
 	exit 1
 fi
 ##
@@ -137,6 +139,7 @@ if [ "${thisAMBERHOME}" == "DETECT" ] ; then
 		thisAMBERHOME=${AMBERHOME}
 	else
 		echo "Could not Detect AMBERHOME.  Exiting." | tee -a ${outputFileName}
+		echo "$(date) : Simulation ended with AMBERHOME error" >> ${statusFileName}
 		exit 1
 	fi
 fi
@@ -172,6 +175,8 @@ elif [ "${mdEngine}" == "sander" ] ; then
 	useLogFile=N
 else
 	echo "mdEngine other than pmemd or sander was specified.  Exiting." | tee -a ${outputFileName}
+	echo "$(date) : Simulation ended with mdEngine error" >> ${statusFileName}
+	exit 1
 fi
 echo "
 The mdEngine is ${mdEngine} and the text to check for success is '${checkText}'." | tee -a ${outputFileName}
@@ -181,6 +186,8 @@ The mdEngine is ${mdEngine} and the text to check for success is '${checkText}'.
 if [ "${useCUDA}" == "Y" ] ; then 
 	if [ "${mdEngine}" != "pmemd" ] ; then 
 		echo "mdEngine other than pmemd requested with CUDA.  Exiting." | tee -a ${outputFileName}
+		echo "$(date) : Simulation ended with mdEngine-CUDA error" >> ${statusFileName}
+		exit 1
 	fi
 	mdEngine="${mdEngine}.cuda"
 fi
@@ -209,6 +216,7 @@ fi
 echo "
 There will be ${#RunParts[@]} phases to this simulation:
 " | tee -a ${outputFileName}
+echo "$(date) : Simulation will run with ${#RunParts[@]} phases" >> ${statusFileName}
 
 
 declare -A Commands
@@ -267,6 +275,7 @@ fi
 
 ##  Do the runs
 #
+AllRunsOk="Yes"
 for part in ${RunParts[@]} ; do
 	echo "
 	Starting phase ${part}" | tee -a ${outputFileName}
@@ -306,6 +315,7 @@ The simulation cannot continue.  Exiting.
 
 "  | tee -a ${outputFileName}
 			echo "$(date) : Simulation has failed on phase ${part}." >> ${statusFileName}
+			echo "$(date) : Simulation finished with MD error." >> ${statusFileName}
 			exit 1
 		fi
 		echo "$(date) : Phase ${part} finished normally." >> ${statusFileName}
@@ -313,3 +323,4 @@ The simulation cannot continue.  Exiting.
 
 done
 
+echo "$(date) : Simulation finished normally." >> ${statusFileName}
