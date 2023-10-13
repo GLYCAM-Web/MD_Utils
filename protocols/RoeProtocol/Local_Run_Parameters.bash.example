@@ -6,7 +6,8 @@ numProcs='4'
 useCUDA='N'
 allowOverwrite='N'
 
-MDUtilsTestRunWorkflow='Yes'
+# To speed up simulations when you only want to test the workflow, uncomment this:
+# MDUtilsTestRunWorkflow='Yes'
 
 #writeCommands=Only
 #ReferenceCoordinates='NONE'
