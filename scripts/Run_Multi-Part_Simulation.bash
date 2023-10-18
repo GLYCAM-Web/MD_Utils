@@ -165,59 +165,99 @@ if [ -e ${AMBERHOME}/amber.sh ] ; then
 	source ${AMBERHOME}/amber.sh
 fi
 
-##
-# Set the contents of checkText according to the MD Engine
-if [ "${mdEngine}" == "pmemd" ] ; then 
-	checkText='Total wall time'
-	useLogFile=Y
-elif [ "${mdEngine}" == "sander" ] ; then 
-	checkText='wallclock() was called'
-	useLogFile=N
-else
-	echo "mdEngine other than pmemd or sander was specified.  Exiting." | tee -a ${outputFileName}
-	echo "$(date) : Simulation ended with mdEngine error" >> ${statusFileName}
-	exit 1
+#########
+######### If we made it this far, declare any undefined arrays.
+#########
+arrayTester="${MdExecutable[@]}"
+if [ "${arrayTester}zzz" == "zzz" ] ; then
+	declare -A MdExecutable
 fi
-echo "
-The mdEngine is ${mdEngine} and the text to check for success is '${checkText}'." | tee -a ${outputFileName}
+arrayTester="${MdUseCuda[@]}"
+if [ "${arrayTester}zzz" == "zzz" ] ; then
+	declare -A MdUseCuda
+fi
+arrayTester="${MdUseMPI[@]}"
+if [ "${arrayTester}zzz" == "zzz" ] ; then
+	declare -A MdUseMPI
+fi
+arrayTester="${MdAllowOverwrite[@]}"
+if [ "${arrayTester}zzz" == "zzz" ] ; then
+	declare -A MdAllowOverwrite
+fi
+arrayTester="${MdNumberOfProcessors[@]}"
+if [ "${arrayTester}zzz" == "zzz" ] ; then
+	declare -A MdNumberOfProcessors
+fi
+arrayTester="${NormalFinishText[@]}"
+if [ "${arrayTester}zzz" == "zzz" ] ; then
+	declare -A NormalFinishText
+fi
+arrayTester="${MdUseLogFile[@]}"
+if [ "${arrayTester}zzz" == "zzz" ] ; then
+	declare -A MdUseLogFile
+fi
+if [ "${ReferenceCoordinates}" == "NONE" ] ; then
+	declare -A ReferenceCoordinates
+fi
 
-##
-# Set the runs to use CUDA if requested
-if [ "${useCUDA}" == "Y" ] ; then 
-	if [ "${mdEngine}" != "pmemd" ] ; then 
-		echo "mdEngine other than pmemd requested with CUDA.  Exiting." | tee -a ${outputFileName}
-		echo "$(date) : Simulation ended with mdEngine-CUDA error" >> ${statusFileName}
-		exit 1
+#####
+##### Set the values in the arrays to the default if not already set in the arrays
+#####
+for part in "${RunParts[@]}" ; do
+	if [ "${MdExecutable[${part}]}zzz" == "zzz" ] ; then
+		MdExecutable[${part}]="${mdEngine}"
 	fi
-	mdEngine="${mdEngine}.cuda"
-fi
+	if [ "${MdUseCuda[${part}]}zzz" == "zzz" ] ; then
+		MdUseCuda[${part}]="${useCUDA}"
+	fi
+	# check sanity of CUDA/engine combination
+	if [ "${MdUseCuda[${part}]}" == 'Y' ] ; then
+		if [ "${MdExecutable[${part}]}" != "pmemd" ] ; then 
+			echo "MD executable other than pmemd requested with CUDA.  Exiting." | tee -a ${outputFileName}
+			echo "$(date) : Simulation ended with mdEngine-CUDA error" >> ${statusFileName}
+			exit 1
+		fi
+	fi
+	if [ "${MdUseMPI[${part}]}zzz" == "zzz" ] ; then
+		MdUseMPI[${part}]="${useMPI}"
+	fi
+	if [ "${MdAllowOverwrite[${part}]}zzz" == "zzz" ] ; then
+		MdAllowOverwrite[${part}]="${allowOverwrite}"
+	fi
+	if [ "${MdNumberOfProcessors[${part}]}zzz" == "zzz" ] ; then
+		MdNumberOfProcessors[${part}]="${numProcs}"
+	fi
+	if [ "${ReferenceCoordinates[${part}]}zzz" == "zzz" ] ; then
+		ReferenceCoordinates[${part}]="NONE"
+	fi
+	if [ "${MdNormalFinishText[${part}]}zzz" == "zzz" ] ; then
+		if [ "${MdExecutable[${part}]}" == "pmemd" ] ; then 
+			MdNormalFinishText[${part}]='Total wall time'
+		elif [ "${MdExecutable[${part}]}" == "sander" ] ; then 
+			MdNormalFinishText[${part}]='wallclock() was called'
+		else
+			echo "mdEngine other than pmemd or sander was specified without specifying a normal finish text.  Exiting." | tee -a ${outputFileName}
+			echo "$(date) : Simulation ended with MdNormalFinishText error" >> ${statusFileName}
+			exit 1
+		fi
+	fi
+	if [ "${MdUseLogFile[${part}]}zzz" == "zzz" ] ; then
+		if [ "${MdExecutable[${part}]}" == "pmemd" ] ; then 
+			MdUseLogFile[${part}]='Y'
+		else
+			MdUseLogFile[${part}]='N'
+		fi
+	fi
 
-##
-# Set the runs to use MPI if requested
-if [ "${useMPI}" == "Y" ] ; then 
-	mdEngine="mpirun ${mdEngine}.MPI -np ${numProcs} "
-fi
+done
 
-##
-# Set the runs to allow overwriting if requested
-if [ "${allowOverwrite}" == "Y" ] ; then 
-	mdEngine="${mdEngine} -O "
-fi
-
-
-## Tell everyone what the complete mdEngine command is:
-echo "Complete mdEngine command is '${mdEngine}'." | tee -a ${outputFileName}
-
-## See if we need to provide reference coordinates for restraints
-if [ "${ReferenceCoordinates}" != "NONE" ] ; then
-	useRefCoords="Y"
-fi
-
+#####
+##### Start building the commands
+#####
 echo "
 There will be ${#RunParts[@]} phases to this simulation:
 " | tee -a ${outputFileName}
 echo "$(date) : Simulation will run with ${#RunParts[@]} phases" >> ${statusFileName}
-
 
 declare -A Commands
 thisRestart="${INPCRD}"
@@ -227,9 +267,27 @@ for part in "${RunParts[@]}" ; do
 	- is called ${part} 
 	- has prefix ${Prefix[${part}]} 
 	- is described as: ${Description[${part}]}""" | tee -a ${outputFileName}
-	i=$((i+1))
 
-	COMMAND="${mdEngine} \
+	thisMdEngine="${MdExecutable[${part}]}"
+	# Set the runs to use CUDA if requested
+	if [ "${MdUseCuda[${part}]}" == "Y" ] ; then 
+		thisMdEngine="${thisMdEngine}.cuda"
+	fi
+
+	##
+	# Set the runs to use MPI if requested
+	if [ "${MdUseMPI[${part}]}" == "Y" ] ; then 
+		thisMdEngine="mpirun ${thisMdEngine}.MPI -np ${MdNumberOfProcessors[${part}]} "
+	fi
+
+	##
+	# Set the runs to allow overwriting if requested
+	if [ "${MdAllowOverwrite[${part}]}" == "Y" ] ; then 
+		thisMdEngine="${thisMdEngine} -O "
+	fi
+
+
+	COMMAND="${thisMdEngine} \
  -i ${Prefix[${part}]}.in \
  -o ${Prefix[${part}]}.o \
  -e ${Prefix[${part}]}.en \
@@ -239,33 +297,36 @@ for part in "${RunParts[@]}" ; do
  -x ${Prefix[${part}]}.${mdSuffix} \
  -inf ${Prefix[${part}]}.info "
 
-	if [ "${useLogFile}" == "Y" ] ; then
+	if [ "${MdUseLogFile[${part}]}" == "Y" ] ; then
 		COMMAND="${COMMAND} -l ${Prefix[${part}]}.log "
 	fi
 
-	if [ "${useRefCoords}" == "Y" ] ; then
-		if [ "${ReferenceCoordinates[${part}]}" != "NONE" ] ; then
-			if [ "${ReferenceCoordinates[${part}]}" == "Initial" ] ; then
-				thisRefCoords="${INPCRD}"
-			else
-				thisRefPart="${ReferenceCoordinates[${part}]}"
-				thisRefCoords="${Prefix[${thisRefPart}]}.${restrtSuffix}"
-			fi
-			COMMAND="${COMMAND} -ref ${thisRefCoords}"
+	if [ "${ReferenceCoordinates[${part}]}" != "NONE" ] ; then
+		if [ "${ReferenceCoordinates[${part}]}" == "Initial" ] ; then
+			thisRefCoords="${INPCRD}"
+		else
+			thisRefPart="${ReferenceCoordinates[${part}]}"
+			thisRefCoords="${Prefix[${thisRefPart}]}.${restrtSuffix}"
 		fi
+		COMMAND="${COMMAND} -ref ${thisRefCoords}"
 	fi
 
 	Commands[${part}]="${COMMAND}"
 	thisRestart=${Prefix[${part}]}.${restrtSuffix}
+
+	i=$((i+1))
 done
 
-#for part in ${RunParts[@]} ; do
-#	echo "This is the command for part ${part}"
-#	echo "${Commands[${part}]}"
-#done
-#
-#echo "REMOVE ME"
-#exit
+for part in ${RunParts[@]} ; do
+	echo "This is the command for part ${part}"
+	echo "${Commands[${part}]}"
+done
+
+echo "REMOVE ME"
+exit
+
+
+
 echo "$(date) : Simulation setup is complete." >> ${statusFileName}
 if [ "${writeCommands}" != "Only" ] ; then
 	echo "$(date) : Starting the ${#RunParts[@]} phases of this simulation." >> ${statusFileName}

@@ -58,6 +58,84 @@ Description=(
 	[relax09]='Relax full system, no restraints'
 	[produ10]='MD production run'
 	)
+declare -A MdExecutable
+MdExecutable=(
+	[min01]='pmemd'
+	[relax02]='pmemd'
+	[min03]='pmemd'
+	[min04]='pmemd'
+	[min05]='pmemd'
+	[relax06]='pmemd'
+	[relax07]='pmemd'
+	[relax08]='pmemd'
+	[relax09]='pmemd'
+	[produ10]='pmemd'
+	)
+declare -A MdUseCuda
+MdUseCuda=(
+	[min01]='pmemd'
+	[relax02]='pmemd'
+	[min03]='pmemd'
+	[min04]='pmemd'
+	[min05]='pmemd'
+	[relax06]='pmemd'
+	[relax07]='pmemd'
+	[relax08]='pmemd'
+	[relax09]='pmemd'
+	[produ10]='pmemd'
+	)
+declare -A MdUseMPI
+MdUseMPI=(
+	[min01]='pmemd'
+	[relax02]='pmemd'
+	[min03]='pmemd'
+	[min04]='pmemd'
+	[min05]='pmemd'
+	[relax06]='pmemd'
+	[relax07]='pmemd'
+	[relax08]='pmemd'
+	[relax09]='pmemd'
+	[produ10]='pmemd'
+	)
+declare -A MdAllowOverwrite
+MdAllowOverwrite=(
+	[min01]='pmemd'
+	[relax02]='pmemd'
+	[min03]='pmemd'
+	[min04]='pmemd'
+	[min05]='pmemd'
+	[relax06]='pmemd'
+	[relax07]='pmemd'
+	[relax08]='pmemd'
+	[relax09]='pmemd'
+	[produ10]='pmemd'
+	)
+declare -A MdNumberOfProcessors
+MdNumberOfProcessors=(
+	[min01]='pmemd'
+	[relax02]='pmemd'
+	[min03]='pmemd'
+	[min04]='pmemd'
+	[min05]='pmemd'
+	[relax06]='pmemd'
+	[relax07]='pmemd'
+	[relax08]='pmemd'
+	[relax09]='pmemd'
+	[produ10]='pmemd'
+	)
+declare -A NormalFinishText
+NormalFinishText=(
+	[min01]='pmemd'
+	[relax02]='pmemd'
+	[min03]='pmemd'
+	[min04]='pmemd'
+	[min05]='pmemd'
+	[relax06]='pmemd'
+	[relax07]='pmemd'
+	[relax08]='pmemd'
+	[relax09]='pmemd'
+	[produ10]='pmemd'
+	)
 declare -A ReferenceCoordinates
 ReferenceCoordinates=(
 	[min01]='Initial'
