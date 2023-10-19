@@ -10,15 +10,15 @@ allowOverwrites='N'
 # MDUtilsTestRunWorkflow='Yes'
 
 #writeCommands=Only
-#ReferenceCoordinates='NONE'
+#refCoords='NONE'
 
 #for i in ${RunParts[@]} ; do 
 #	echo "${i}"
 #	echo "${Prefix[${i}]}"
 #	echo "${Description[${i}]}"
-#	if [ "${ReferenceCoordinates}" == "NONE" ] ; then
+#	if [ "${refCoords}" == "NONE" ] ; then
 #		echo "There are no ReferenceCoordinates defined."
 #	else 
-#		echo "${ReferenceCoordinates[${i}]}"
+#		echo "${refCoordsArr[${i}]}"
 #	fi
 #done

@@ -58,58 +58,58 @@ Description=(
 	[relax09]='Relax full system, no restraints'
 	[produ10]='MD production run'
 	)
-declare -A mdEngineArr
-mdEngineArr=(
-	[min01]='pmemd'
-	[relax02]='pmemd'
-	[min03]='pmemd'
-	[min04]='pmemd'
-	[min05]='pmemd'
-	[relax06]='pmemd'
-	[relax07]='pmemd'
-	[relax08]='pmemd'
-	[relax09]='pmemd'
-	[produ10]='pmemd'
-	)
-declare -A useCudaArr
-useCudaArr=(
-	[min01]='Y'
-	[relax02]='Y'
-	[min03]='Y'
-	[min04]='Y'
-	[min05]='Y'
-	[relax06]='Y'
-	[relax07]='Y'
-	[relax08]='Y'
-	[relax09]='Y'
-	[produ10]='Y'
-	)
-declare -A useMpiArr
-useMpiArr=(
-	[min01]='N'
-	[relax02]='N'
-	[min03]='N'
-	[min04]='N'
-	[min05]='N'
-	[relax06]='N'
-	[relax07]='N'
-	[relax08]='N'
-	[relax09]='N'
-	[produ10]='N'
-	)
-declare -A allowOverwritesArr
-allowOverwritesArr=(
-	[min01]='N'
-	[relax02]='N'
-	[min03]='N'
-	[min04]='N'
-	[min05]='N'
-	[relax06]='N'
-	[relax07]='N'
-	[relax08]='N'
-	[relax09]='N'
-	[produ10]='N'
-	)
+#declare -A mdEngineArr
+#mdEngineArr=(
+#	[min01]='pmemd'
+#	[relax02]='pmemd'
+#	[min03]='pmemd'
+#	[min04]='pmemd'
+#	[min05]='pmemd'
+#	[relax06]='pmemd'
+#	[relax07]='pmemd'
+#	[relax08]='pmemd'
+#	[relax09]='pmemd'
+#	[produ10]='pmemd'
+#	)
+#declare -A useCudaArr
+#useCudaArr=(
+#	[min01]='Y'
+#	[relax02]='Y'
+#	[min03]='Y'
+#	[min04]='Y'
+#	[min05]='Y'
+#	[relax06]='Y'
+#	[relax07]='Y'
+#	[relax08]='Y'
+#	[relax09]='Y'
+#	[produ10]='Y'
+#	)
+#declare -A useMpiArr
+#useMpiArr=(
+#	[min01]='N'
+#	[relax02]='N'
+#	[min03]='N'
+#	[min04]='N'
+#	[min05]='N'
+#	[relax06]='N'
+#	[relax07]='N'
+#	[relax08]='N'
+#	[relax09]='N'
+#	[produ10]='N'
+#	)
+#declare -A allowOverwritesArr
+#allowOverwritesArr=(
+#	[min01]='N'
+#	[relax02]='N'
+#	[min03]='N'
+#	[min04]='N'
+#	[min05]='N'
+#	[relax06]='N'
+#	[relax07]='N'
+#	[relax08]='N'
+#	[relax09]='N'
+#	[produ10]='N'
+#	)
 ## This can be defined if MPI is used
 #declare -A numProcsArr
 #numProcsArr=(
