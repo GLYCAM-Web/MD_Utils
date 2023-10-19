@@ -59,21 +59,21 @@ coordOutputFormat="NetCDF"  ## ntwo=2 - much smaller files; not human readable
 mdEngine=pmemd
 # mdEngine=sander
 ##
-## Will you be running your simulation in parallel ('useMPI')?
+## Will you be running your simulation in parallel ('useMpi')?
 ## NOTE! This is not the same as using CUDA (below).  It is possible to be
 ##      only parallel, only CUDA, both, or neither.
-useMPI=Y
-# useMPI=N
+useMpi=Y
+# useMpi=N
 #
-# If you chose Y for useMPI, specify the number of processors
+# If you chose Y for useMpi, specify the number of processors
 # Replace '4' with your number of processors, if that is a different number
 numProcs=4
 ##
 ## Will you be running your simulation using CUDA?
 ## We expect that more users will have ready access to plain MPI than to CUDA,
 ##       so we set the default to be no.
-useCUDA=N
-# useCUDA=Y
+useCuda=N
+# useCuda=Y
 ##
 ## Would you like this script to print out the job submission commands?
 ## These will be printed to outputFileName, below.
@@ -89,12 +89,12 @@ writeCommands=Yes
 ## This file will contain a log from the point of view of this script.
 outputFileName='run_simulation.log'
 ##  
-## The allowOverwrite variable controls whether the simulation will 
+## The allowOverwrites variable controls whether the simulation will 
 ##      overwrite any pre-existing files.
 ## It is useful to set it to 'N' if you don't want a restarted simulation
 ##      to overwrite files that were already begun. 
-allowOverwrite=Y
-# allowOverwrite=N
+allowOverwrites=Y
+# allowOverwrites=N
 ##
 ## Change these if you want to alter the number of consecutive runs and
 ##      their prefixes.  Please also update the descriptive texts.
@@ -229,7 +229,7 @@ The mdEngine is ${mdEngine} and the text to check for success is '${checkText}'.
 
 ##
 # Set the runs to use CUDA if requested
-if [ "${useCUDA}" == "Y" ] ; then 
+if [ "${useCuda}" == "Y" ] ; then 
 	if [ "${mdEngine}" != "pmemd" ] ; then 
 		echo "mdEngine other than pmemd requested with CUDA.  Exiting." | tee -a ${outputFileName}
 	fi
@@ -238,7 +238,7 @@ fi
 
 ##
 # Set the runs to use MPI if requested
-if [ "${useMPI}" == "Y" ] ; then 
+if [ "${useMpi}" == "Y" ] ; then 
 	mdEngine="mpirun ${mdEngine}.MPI -np ${numProcs} "
 fi
 

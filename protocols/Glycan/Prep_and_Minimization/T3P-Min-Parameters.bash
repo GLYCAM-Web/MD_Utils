@@ -19,10 +19,10 @@ mdSuffix='nc'
 outputFileName='t3p-minimization.log'
 
 mdEngine=pmemd
-useMPI=Y
+useMpi=Y
 numProcs=4
-useCUDA=N
-allowOverwrite=N
+useCuda=N
+allowOverwrites=N
 
 writeCommands=Yes
 

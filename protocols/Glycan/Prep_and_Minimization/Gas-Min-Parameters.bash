@@ -19,10 +19,10 @@ mdSuffix='nc'
 outputFileName='gas_phase_minimization.log'
 
 mdEngine=sander
-useMPI=N
+useMpi=N
 numProcs=1
-useCUDA=N
-allowOverwrite=N
+useCuda=N
+allowOverwrites=N
 
 writeCommands=Yes
 
