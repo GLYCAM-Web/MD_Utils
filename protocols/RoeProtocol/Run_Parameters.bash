@@ -12,7 +12,7 @@
 ##
 ## Values in this file can be overridden in a file called 
 ##        Local_Run_Parameters.bash
-## ...that is included at the bottom of this file, if it is found.
+## This file is included at the bottom of this file, if it is found.
 ##
 ################################################################################
 
@@ -20,7 +20,7 @@ thisAMBERHOME='DETECT'
 PRMTOP='MdInput.parm7'
 INPCRD='MdInput.rst7'
 initialCoordFormat='Amber7Rst'   ## Amber 7 restart
-coordOutputFormat='NetCDF'  ## ntwo=2 ; much smaller files; not human readable
+coordOutputFormat='NetCDF'  ## ntwo=2 ; much smaller files ; not human readable
 
 mdEngine='pmemd'
 useMPI='N'
@@ -73,69 +73,71 @@ MdExecutable=(
 	)
 declare -A MdUseCuda
 MdUseCuda=(
-	[min01]='pmemd'
-	[relax02]='pmemd'
-	[min03]='pmemd'
-	[min04]='pmemd'
-	[min05]='pmemd'
-	[relax06]='pmemd'
-	[relax07]='pmemd'
-	[relax08]='pmemd'
-	[relax09]='pmemd'
-	[produ10]='pmemd'
+	[min01]='Y'
+	[relax02]='Y'
+	[min03]='Y'
+	[min04]='Y'
+	[min05]='Y'
+	[relax06]='Y'
+	[relax07]='Y'
+	[relax08]='Y'
+	[relax09]='Y'
+	[produ10]='Y'
 	)
 declare -A MdUseMPI
 MdUseMPI=(
-	[min01]='pmemd'
-	[relax02]='pmemd'
-	[min03]='pmemd'
-	[min04]='pmemd'
-	[min05]='pmemd'
-	[relax06]='pmemd'
-	[relax07]='pmemd'
-	[relax08]='pmemd'
-	[relax09]='pmemd'
-	[produ10]='pmemd'
+	[min01]='N'
+	[relax02]='N'
+	[min03]='N'
+	[min04]='N'
+	[min05]='N'
+	[relax06]='N'
+	[relax07]='N'
+	[relax08]='N'
+	[relax09]='N'
+	[produ10]='N'
 	)
 declare -A MdAllowOverwrite
 MdAllowOverwrite=(
-	[min01]='pmemd'
-	[relax02]='pmemd'
-	[min03]='pmemd'
-	[min04]='pmemd'
-	[min05]='pmemd'
-	[relax06]='pmemd'
-	[relax07]='pmemd'
-	[relax08]='pmemd'
-	[relax09]='pmemd'
-	[produ10]='pmemd'
+	[min01]='N'
+	[relax02]='N'
+	[min03]='N'
+	[min04]='N'
+	[min05]='N'
+	[relax06]='N'
+	[relax07]='N'
+	[relax08]='N'
+	[relax09]='N'
+	[produ10]='N'
 	)
-declare -A MdNumberOfProcessors
-MdNumberOfProcessors=(
-	[min01]='pmemd'
-	[relax02]='pmemd'
-	[min03]='pmemd'
-	[min04]='pmemd'
-	[min05]='pmemd'
-	[relax06]='pmemd'
-	[relax07]='pmemd'
-	[relax08]='pmemd'
-	[relax09]='pmemd'
-	[produ10]='pmemd'
-	)
-declare -A NormalFinishText
-NormalFinishText=(
-	[min01]='pmemd'
-	[relax02]='pmemd'
-	[min03]='pmemd'
-	[min04]='pmemd'
-	[min05]='pmemd'
-	[relax06]='pmemd'
-	[relax07]='pmemd'
-	[relax08]='pmemd'
-	[relax09]='pmemd'
-	[produ10]='pmemd'
-	)
+## This can be defined if MPI is used
+#declare -A MdNumberOfProcessors
+#MdNumberOfProcessors=(
+#	[min01]=''
+#	[relax02]=''
+#	[min03]=''
+#	[min04]=''
+#	[min05]=''
+#	[relax06]=''
+#	[relax07]=''
+#	[relax08]=''
+#	[relax09]=''
+#	[produ10]=''
+#	)
+## This can be defined if needed
+#declare -A NormalFinishText
+#NormalFinishText=(
+#	[min01]=''
+#	[relax02]=''
+#	[min03]=''
+#	[min04]=''
+#	[min05]=''
+#	[relax06]=''
+#	[relax07]=''
+#	[relax08]=''
+#	[relax09]=''
+#	[produ10]=''
+#	)
 declare -A ReferenceCoordinates
 ReferenceCoordinates=(
 	[min01]='Initial'

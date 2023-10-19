@@ -44,17 +44,17 @@ fi
 ################################################################################
 ##
 ##
-ReferenceCoordinates='NONE'
+refCoords='NONE'
 thisAMBERHOME='DETECT'
 PRMTOP='structure.parm7'
 INPCRD='structure.rst7'
 coordOutputFormat="NetCDF"  
 mdEngine=pmemd
-useMPI=Y
+useMpi=Y
 numProcs=4
-useCUDA=N
+useCuda=N
 writeCommands=Yes
-outputFileName='details.log'
+detailsFileName='details.log'
 statusFileName='status.log'
 allowOverwrite=Y
 if [ "${coordOutputFormat}" == "NetCDF" ] ; then
@@ -78,55 +78,113 @@ testWorkflow=No
 ################################################################################
 
 ################################################################################
+################################################################################
+## First, some useful functions
+##
+# print_to_status_log ${Info} 
+print_to_status_log() {
+        if [ -z "${1}" ] ; then
+		echo "Exiting - Cannot print null string to status log."
+		exit 1
+        else
+		echo "$(date) : ${1}" >> ${statusFileName}
+        fi
+}
+# print_to_details_log ${Info} 
+print_to_details_log() {
+        if [ -z "${1}" ] ; then
+		echo "Exiting - Cannot print null string to details log."
+		exit 1
+        else
+		echo "${1}" >> ${detailsFileName}
+        fi
+}
+# print_to_details_log ${Info} 
+print_to_both_logs() {
+        if [ -z "${1}" ] ; then
+		echo "Exiting - Cannot print null string to details log."
+		exit 1
+        else
+		echo "${1}" >> ${detailsFileName}
+        fi
+}
+# print_error_and_exit [ ${ERROR} ]
+print_error_and_exit() {
+        if [ -z "${1}" ] ; then
+		print_to_status_log "Exiting - There was a problem. See the details file and info above." 
+		print_to_details_log "Exiting - There was a problem. See the info above." 
+        else
+		print_to_both_logs "${1}"
+        fi
+        exit 1
+}
+# exit_if_not_array_yet_varied ${parameter}
+exit_if_not_array_yet_varied() {
+        if [ -z "${2}" ] ; then
+		echo "number 1 is >>>${1}<<<"
+		echo "number 2 is >>>${2}<<<"
+		print_error_and_exit "Incorrect use of exit_if_not_array_yet_varied function"
+	fi
+	if [ "${1}" == "VARIED" ] ; then
+		print_error_and_exit "The variable ${2} is given as VARIED, but the corresponding array is not defined."
+	else
+		false
+	fi
+
+}
+
+################################################################################
+################################################################################
+## Simulation logic starts
+##
+# Start with clean logs.
+echo "Details log begun on $(date)" > ${detailsFileName}
 echo "$(date) : Simulation setup is starting." > ${statusFileName}
-# Read in the Run Parameters file
+
 if [ -f "${GW_RUN_PARAMETERS}" ] ; then
 	. ${GW_RUN_PARAMETERS}
 else
-	echo "The run parameters file, '${GW_RUN_PARAMETERS}', was not found."
-	echo "This file must be present. Exiting."
-	echo "$(date) : Simulation ended with GW_RUN_PARAMETERS error" >> ${statusFileName}
-	exit 1
+	print_to_details_log "The run parameters file, '${GW_RUN_PARAMETERS}', was not found."
+	print_to_details_log "This file must be present. Exiting."
+	print_error_and_exit "Simulation ended with GW_RUN_PARAMETERS error" 
 fi
 if [ "${MDUtilsTestRunWorkflow}" == "Yes" ] ; then
 	testWorkflow=Yes
 fi
-echo "TEST WORKFLOW IS: ${testWorkflow}"
-##
+print_to_details_log "TEST WORKFLOW IS: ${testWorkflow}"
+
 ################################################################################
 ## Checking for parameters that must be declared.
 weshouldexit="No"
-if [ "${RunParts}zzz" == "zzz" ] ; then
-	echo "RunParts must be declared."
+if [ -z ${RunParts} ] ; then
+	print_to_details_log "RunParts must be declared."
 	weshouldexit="Yes"
 fi
 for part in ${RunParts[@]} ; do
-	if [ "${Prefix[${part}]}zzz" == "zzz" ] ; then
-		echo "The Prefix for part ${part} must be declared."
+	if [ -z "${Prefix[${part}]}" ] ; then
+		print_to_details_log "The Prefix for part ${part} must be declared."
 		weshouldexit="Yes"
 	fi
-	if [ "${Description[${part}]}zzz" == "zzz" ] ; then
-		echo "The Description for part ${part} must be declared."
+	if [ -z "${Description[${part}]}"  ] ; then
+		print_to_details_log "The Description for part ${part} must be declared."
 		weshouldexit="Yes"
 	fi
 done
 if [ "${weshouldexit}" == "Yes" ] ; then
-	echo "Exiting now."
-	echo "$(date) : Simulation ended with declarations error" >> ${statusFileName}
-	exit 1
+	print_error_and_exit "Simulation ended with declarations error"
 fi
 ##
 # Start the ouput file
-echo "Beginning MD simulations on $(date)" | tee ${outputFileName}
-echo "Working directory is $(pwd)" | tee -a ${outputFileName}
-echo "Using info from file: '${GW_RUN_PARAMETERS}'. " | tee -a ${outputFileName}
+print_to_details_log """Beginning MD simulations on $(date)
+Working directory is $(pwd) 
+Using info from file: '${GW_RUN_PARAMETERS}'. """
 
 ##
 ##
 # Source needed information from AMBERHOME
 ##
 # First, see if an AMBERHOME is defined in the environment
-if [ "${AMBERHOME}zzz" == "zzz" ] ; then
+if [ -z "${AMBERHOME}" ] ; then
 	amberhomeDefined='No'
 else
 	amberhomeDefined='Yes'
@@ -138,13 +196,12 @@ if [ "${thisAMBERHOME}" == "DETECT" ] ; then
 	if [ "${amberhomeDefined}" == "Yes" ] ; then
 		thisAMBERHOME=${AMBERHOME}
 	else
-		echo "Could not Detect AMBERHOME.  Exiting." | tee -a ${outputFileName}
-		echo "$(date) : Simulation ended with AMBERHOME error" >> ${statusFileName}
-		exit 1
+		print_to_details_log "Could not Detect AMBERHOME.  Exiting." 
+		print_error_and_exit "Simulation ended with AMBERHOME error" 
 	fi
 fi
 if [ ! -d ${thisAMBERHOME} ] ; then
-echo "
+       print_to_details_log """
 !!!!!!!!!!!!!!!  
 Strong Warning 
 !!!!!!!!!!!!!!!  
@@ -152,11 +209,10 @@ Cannot find AMBERHOME.  This is likely to cause problems if this is an attempt
 to actually run a simulation (as opposed to a test of the script, for example).
 The script thinks that the following is AMBERHOME:
 ${thisAMBERHOME}
-" | tee -a ${outputFileName}
+""" 
 if [ "${detectAMBERHOME}" == "No" ] ; then
 	if [ "${amberhomeDefined}" == "Yes" ] ; then
-		echo "The environment defines AMBERHOME as: ${AMBERHOME}
-		" | tee -a ${outputFileName}
+		print_to_details_log "The environment defines AMBERHOME as: ${AMBERHOME}" 
 	fi
 fi
 fi
@@ -168,84 +224,91 @@ fi
 #########
 ######### If we made it this far, declare any undefined arrays.
 #########
-arrayTester="${MdExecutable[@]}"
-if [ "${arrayTester}zzz" == "zzz" ] ; then
-	declare -A MdExecutable
+arrayTester="${mdEngineArr[@]}"
+if [ -z "${arrayTester}" ] ; then
+	exit_if_not_array_yet_varied "${mdEngine}" "mdEngine"
+	declare -A MdEngineArr
 fi
-arrayTester="${MdUseCuda[@]}"
-if [ "${arrayTester}zzz" == "zzz" ] ; then
-	declare -A MdUseCuda
+arrayTester="${useCudaArr[@]}"
+if [ -z "${arrayTester}" ] ; then
+	exit_if_not_array_yet_varied "${useCuda}" "useCuda"
+	declare -A useCudaArr
 fi
-arrayTester="${MdUseMPI[@]}"
-if [ "${arrayTester}zzz" == "zzz" ] ; then
-	declare -A MdUseMPI
+arrayTester="${useMpiArr[@]}"
+if [ -z "${arrayTester}" ] ; then
+	exit_if_not_array_yet_varied "${useMpi}" "useMpi"
+	declare -A useMpiArr
 fi
-arrayTester="${MdAllowOverwrite[@]}"
-if [ "${arrayTester}zzz" == "zzz" ] ; then
-	declare -A MdAllowOverwrite
+arrayTester="${allowOverwritesArr[@]}"
+if [ -z "${arrayTester}" ] ; then
+	exit_if_not_array_yet_varied "${allowOverwrites}" "allowOverwrites"
+	declare -A allowOverwritesArr
 fi
-arrayTester="${MdNumberOfProcessors[@]}"
-if [ "${arrayTester}zzz" == "zzz" ] ; then
-	declare -A MdNumberOfProcessors
+arrayTester="${nProcsArr[@]}"
+if [ -z "${arrayTester}" ] ; then
+	exit_if_not_array_yet_varied "${nProcs}" "nProcs"
+	declare -A nProcsArr
 fi
-arrayTester="${NormalFinishText[@]}"
-if [ "${arrayTester}zzz" == "zzz" ] ; then
-	declare -A NormalFinishText
+arrayTester="${checkTextArr[@]}"
+if [ -z "${arrayTester}" ] ; then
+	exit_if_not_array_yet_varied "${checkText}" "checkText"
+	declare -A checkTextArr
 fi
-arrayTester="${MdUseLogFile[@]}"
-if [ "${arrayTester}zzz" == "zzz" ] ; then
-	declare -A MdUseLogFile
+arrayTester="${useLogFileArr[@]}"
+if [ -z "${arrayTester}" ] ; then
+	exit_if_not_array_yet_varied "${useLogFile}" "useLogFile"
+	declare -A useLogFileArr
 fi
-if [ "${ReferenceCoordinates}" == "NONE" ] ; then
-	declare -A ReferenceCoordinates
+arrayTester="${refCoordsArr[@]}"
+if [ -z "${refCoordsArr}" ] ; then
+	exit_if_not_array_yet_varied "${refCoords}" "refCoords"
+	declare -A refCoordsArr
 fi
 
 #####
 ##### Set the values in the arrays to the default if not already set in the arrays
 #####
 for part in "${RunParts[@]}" ; do
-	if [ "${MdExecutable[${part}]}zzz" == "zzz" ] ; then
-		MdExecutable[${part}]="${mdEngine}"
+	if [ -z "${mdEngineArr[${part}]}" ] ; then
+		mdEngineArr[${part}]="${mdEngine}"
 	fi
-	if [ "${MdUseCuda[${part}]}zzz" == "zzz" ] ; then
-		MdUseCuda[${part}]="${useCUDA}"
+	if [ -z "${useCudaArr[${part}]}" ] ; then
+		useCudaArr[${part}]="${useCuda}"
 	fi
 	# check sanity of CUDA/engine combination
-	if [ "${MdUseCuda[${part}]}" == 'Y' ] ; then
-		if [ "${MdExecutable[${part}]}" != "pmemd" ] ; then 
-			echo "MD executable other than pmemd requested with CUDA.  Exiting." | tee -a ${outputFileName}
-			echo "$(date) : Simulation ended with mdEngine-CUDA error" >> ${statusFileName}
-			exit 1
+	if [ "${useCudaArr[${part}]}" == 'Y' ] ; then
+		if [ "${mdEngineArr[${part}]}" != "pmemd" ] ; then 
+			print_to_details_log "MD executable other than pmemd requested with CUDA.  Exiting." 
+			print_error_and_exit "Simulation ended with mdEngine-CUDA error" 
 		fi
 	fi
-	if [ "${MdUseMPI[${part}]}zzz" == "zzz" ] ; then
-		MdUseMPI[${part}]="${useMPI}"
+	if [ -z "${useMpiArr[${part}]}" ] ; then
+		useMpiArr[${part}]="${useMpi}"
 	fi
-	if [ "${MdAllowOverwrite[${part}]}zzz" == "zzz" ] ; then
-		MdAllowOverwrite[${part}]="${allowOverwrite}"
+	if [ -z "${allowOverwriteArr[${part}]}" ] ; then
+		allowOverwriteArr[${part}]="${allowOverwrite}"
 	fi
-	if [ "${MdNumberOfProcessors[${part}]}zzz" == "zzz" ] ; then
-		MdNumberOfProcessors[${part}]="${numProcs}"
+	if [ -z "${nProcsArr[${part}]}" ] ; then
+		nProcsArr[${part}]="${numProcs}"
 	fi
-	if [ "${ReferenceCoordinates[${part}]}zzz" == "zzz" ] ; then
-		ReferenceCoordinates[${part}]="NONE"
+	if [ -z "${refCoordsArr[${part}]}" ] ; then
+		refCoordsArr[${part}]="NONE"
 	fi
-	if [ "${MdNormalFinishText[${part}]}zzz" == "zzz" ] ; then
-		if [ "${MdExecutable[${part}]}" == "pmemd" ] ; then 
-			MdNormalFinishText[${part}]='Total wall time'
-		elif [ "${MdExecutable[${part}]}" == "sander" ] ; then 
-			MdNormalFinishText[${part}]='wallclock() was called'
+	if [ -z "${checkTextArr[${part}]}" ] ; then
+		if [ "${mdEngineArr[${part}]}" == "pmemd" ] ; then 
+			checkTextArr[${part}]='Total wall time'
+		elif [ "${mdEngineArr[${part}]}" == "sander" ] ; then 
+			checkTextArr[${part}]='wallclock() was called'
 		else
-			echo "mdEngine other than pmemd or sander was specified without specifying a normal finish text.  Exiting." | tee -a ${outputFileName}
-			echo "$(date) : Simulation ended with MdNormalFinishText error" >> ${statusFileName}
-			exit 1
+			print_to_details_file "mdEngine other than pmemd or sander was specified without specifying a normal finish text." 
+			print_error_and_exit "Simulation ended with checkTextArr error" 
 		fi
 	fi
-	if [ "${MdUseLogFile[${part}]}zzz" == "zzz" ] ; then
-		if [ "${MdExecutable[${part}]}" == "pmemd" ] ; then 
-			MdUseLogFile[${part}]='Y'
+	if [ -z "${useLogFileArr[${part}]}" ] ; then
+		if [ "${mdEngineArr[${part}]}" == "pmemd" ] ; then 
+			useLogFileArr[${part}]='Y'
 		else
-			MdUseLogFile[${part}]='N'
+			useLogFileArr[${part}]='N'
 		fi
 	fi
 
@@ -254,35 +317,31 @@ done
 #####
 ##### Start building the commands
 #####
-echo "
-There will be ${#RunParts[@]} phases to this simulation:
-" | tee -a ${outputFileName}
-echo "$(date) : Simulation will run with ${#RunParts[@]} phases" >> ${statusFileName}
+print_to_details_log "
+There will be ${#RunParts[@]} phases to this simulation: 
+"
+print_to_status_log "Simulation will run with ${#RunParts[@]} phases" 
 
 declare -A Commands
 thisRestart="${INPCRD}"
 i=1
 for part in "${RunParts[@]}" ; do
-	echo """Phase ${i} 
+	print_to_details_log """Phase ${i} 
 	- is called ${part} 
 	- has prefix ${Prefix[${part}]} 
-	- is described as: ${Description[${part}]}""" | tee -a ${outputFileName}
+	- is described as: ${Description[${part}]}""" 
 
-	thisMdEngine="${MdExecutable[${part}]}"
-	# Set the runs to use CUDA if requested
-	if [ "${MdUseCuda[${part}]}" == "Y" ] ; then 
+	thisMdEngine="${mdEngineArr[${part}]}"
+
+	if [ "${useCudaArr[${part}]}" == "Y" ] ; then 
 		thisMdEngine="${thisMdEngine}.cuda"
 	fi
 
-	##
-	# Set the runs to use MPI if requested
-	if [ "${MdUseMPI[${part}]}" == "Y" ] ; then 
-		thisMdEngine="mpirun ${thisMdEngine}.MPI -np ${MdNumberOfProcessors[${part}]} "
+	if [ "${useMpiArr[${part}]}" == "Y" ] ; then 
+		thisMdEngine="mpirun ${thisMdEngine}.MPI -np ${nProcsArr[${part}]} "
 	fi
 
-	##
-	# Set the runs to allow overwriting if requested
-	if [ "${MdAllowOverwrite[${part}]}" == "Y" ] ; then 
+	if [ "${allowOverwriteArr[${part}]}" == "Y" ] ; then 
 		thisMdEngine="${thisMdEngine} -O "
 	fi
 
@@ -297,21 +356,22 @@ for part in "${RunParts[@]}" ; do
  -x ${Prefix[${part}]}.${mdSuffix} \
  -inf ${Prefix[${part}]}.info "
 
-	if [ "${MdUseLogFile[${part}]}" == "Y" ] ; then
+	if [ "${useLogFileArr[${part}]}" == "Y" ] ; then
 		COMMAND="${COMMAND} -l ${Prefix[${part}]}.log "
 	fi
 
-	if [ "${ReferenceCoordinates[${part}]}" != "NONE" ] ; then
-		if [ "${ReferenceCoordinates[${part}]}" == "Initial" ] ; then
+	if [ "${refCoordsArr[${part}]}" != "NONE" ] ; then
+		if [ "${refCoordsArr[${part}]}" == "Initial" ] ; then
 			thisRefCoords="${INPCRD}"
 		else
-			thisRefPart="${ReferenceCoordinates[${part}]}"
+			thisRefPart="${refCoordsArr[${part}]}"
 			thisRefCoords="${Prefix[${thisRefPart}]}.${restrtSuffix}"
 		fi
 		COMMAND="${COMMAND} -ref ${thisRefCoords}"
 	fi
 
 	Commands[${part}]="${COMMAND}"
+
 	thisRestart=${Prefix[${part}]}.${restrtSuffix}
 
 	i=$((i+1))
@@ -322,24 +382,24 @@ for part in ${RunParts[@]} ; do
 	echo "${Commands[${part}]}"
 done
 
-echo "REMOVE ME"
+echo "COMMENT OUT THIS LINE AND THE EXIT COMMAND NEXT"
 exit
 
 
 
-echo "$(date) : Simulation setup is complete." >> ${statusFileName}
+print_to_status_log "Simulation setup is complete." 
 if [ "${writeCommands}" != "Only" ] ; then
-	echo "$(date) : Starting the ${#RunParts[@]} phases of this simulation." >> ${statusFileName}
+	print_to_status_log "Starting the ${#RunParts[@]} phases of this simulation." 
 else
-	echo "$(date) : Writing commands only for the ${#RunParts[@]} phases of this simulation." >> ${statusFileName}
+	print_to_status_log "Writing commands only for the ${#RunParts[@]} phases of this simulation." 
 fi
 
 ##  Do the runs
 #
 AllRunsOk="Yes"
 for part in ${RunParts[@]} ; do
-	echo "
-	Starting phase ${part}" | tee -a ${outputFileName}
+	print_to_details_log "
+	Starting phase ${part}" 
 
 	COMMAND="${Commands[${part}]}"
 	
@@ -355,33 +415,31 @@ for part in ${RunParts[@]} ; do
 	#
 	#  Write it to a file if desired
 	if [ "${writeCommands}" != "No" ] ; then
-		echo "
+		print_to_details_log "
 		The command is:
 		${COMMAND}
 
-		" | tee -a ${outputFileName}
+		" 
 	fi
 	#
 	#  Run the command unless told not to 
 	if [ "${writeCommands}" != "Only" ] ; then
-		echo "$(date) : Starting phase ${part}." >> ${statusFileName}
+		print_to_status_log "$(date) : Starting phase ${part}." >> ${statusFileName}
 		eval ${COMMAND}
 		#
 		# Check if the command worked
-		if ! grep -q "$wallclock" ${Prefix[${part}]}.o ; then
-			echo "
+		if ! grep -q "${checkTextArr[${part}]}" ${Prefix[${part}]}.o ; then
+			print_to_details_log "
 
 Something went wrong for run phase ${part}.
-The simulation cannot continue.  Exiting.
-
-"  | tee -a ${outputFileName}
-			echo "$(date) : Simulation has failed on phase ${part}." >> ${statusFileName}
-			echo "$(date) : Simulation finished with MD error." >> ${statusFileName}
-			exit 1
+The simulation cannot continue.  
+"  
+			print_to_status_log "Simulation has failed on phase ${part}." 
+			print_error_and_exit "Simulation finished with MD error." 
 		fi
-		echo "$(date) : Phase ${part} finished normally." >> ${statusFileName}
+		print_to_both_logs "Phase ${part} finished normally." 
 	fi
 
 done
 
-echo "$(date) : Simulation finished normally." >> ${statusFileName}
+print_to_both_logs "Simulation finished normally." 
