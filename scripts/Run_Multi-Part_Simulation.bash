@@ -102,10 +102,11 @@ print_to_details_log() {
 # print_to_details_log ${Info} 
 print_to_both_logs() {
         if [ -z "${1}" ] ; then
-		echo "Exiting - Cannot print null string to details log."
+		echo "Exiting - Cannot print null string to the log files."
 		exit 1
         else
-		echo "${1}" >> ${detailsFileName}
+		print_to_status_log "${1}"
+                print_to_details_log "${1}"
         fi
 }
 # print_error_and_exit [ ${ERROR} ]
@@ -382,8 +383,8 @@ for part in ${RunParts[@]} ; do
 	echo "${Commands[${part}]}"
 done
 
-echo "COMMENT OUT THIS LINE AND THE EXIT COMMAND NEXT"
-exit
+#echo "COMMENT OUT THIS LINE AND THE EXIT COMMAND NEXT"
+#exit
 
 
 
