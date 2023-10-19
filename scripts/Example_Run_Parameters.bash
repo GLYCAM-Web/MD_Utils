@@ -36,9 +36,63 @@ Description=(
 )
 
 ################################################################################
+##
 ## Variables in this section have defaults.  See the main script for defaults.
+##
+## Many variables can be specified in array form so that they change for each 
+## step in the simulation.  
+##
 ################################################################################
 ##
+#########################################
+## Arrays (dictionaries) in general
+#########################################
+##
+## Aside from RunParts, Prefix and Description, which must be declared, some options can be single-valued or an array.
+## If they are cast as an array, a default can be set. You can also specify that array values must be used.
+## Internally, all these variables are turned into arrays.
+##
+## Names of these variables come in pairs, for example:
+#   
+#    simParameter  simParameterArr
+#   
+## The variable with the 'Arr' suffix is the array.  It must be a dictionary with the form of Prefix and Description. 
+## That is, its keys must be the members of Runparts and be present in the order they appear in RunParts.
+##
+## If your dictionary values are all the same, there is no need to generate an array. In this case, just use the 
+## non-array variable, like so:
+#
+#    simParameter="constantValue"
+#
+## This usage also applies if you want to have a default. In this exaple, 'min' gets a specified value, but 'relax'
+## and 'produ' get the default value.
+#
+#    simParameter="defaultValue"
+#
+#    declare -a simParameterArr # an array/dictionary of simulation parameters
+#    simParameterArr=(
+#    	[min]='minimizationValue'
+#    	[relax]=''
+#    	[produ]=''
+#    )
+##
+## If you want to ensure that only values in the array/dictionary are used, and that the program will fail if a value
+## is not provided, set your parameter to 'VARIED'.
+#
+#    simParameter='VARIED'  # Special value meaning to strictly use array definitions.
+#
+#    declare -a simParameterArr 
+#    simParameterArr=(
+#    	[min]='minimizationValue'
+#    	[relax]=''  # <--- will cause failure because not defined and 'VARIED' is used above
+#    	[produ]='produValue'
+#    )
+##
+##
+##
+############################
+## Restraints
+############################
 ## If you need restraints for your steps, this can be an array.  
 ## Valid values are:
 ## 	Initial = use the starting coordinates
@@ -50,16 +104,18 @@ Description=(
 ## relaxation phase is restrained to the coords in the restart file from the 
 ## RunPart called 'min'.  The production run has no restraints.
 ##
-##	declare -a ReferenceCoordinates
-##	ReferenceCoordinates=(
+##	declare -a refCoordsArr
+##	refCoordsArr=(
 ##		[min]='Initial'
 ##		[relax]='min'
 ##		[produ]='NONE'
 ##	)
 ##
 ## To have no restraints, simply say:
-ReferenceCoordinates='NONE'
+refCoords='NONE'
 ##
+## To have the program fail if you have not declared your array (or have not declared it properly), use:
+#  refCoords='VARIED'
 ##
 ###############################
 ## Tell the script how to get your AMBERHOME:
@@ -93,25 +149,29 @@ coordOutputFormat="NetCDF"  ## ntwo=2 - much smaller files; not human readable
 ## Note - there can be only one mdEngine for a given call of this script.
 mdEngine=pmemd
 # mdEngine=sander
+# mdEngineArr is enabled
 ##
 ###############################
-## Will you be running your simulation in parallel ('useMPI')?
+## Will you be running your simulation in parallel ('useMpi')?
 ## NOTE! This is not the same as using CUDA (below).  It is possible to be
 ##      only parallel, only CUDA, both, or neither.
-useMPI=Y
-# useMPI=N
+useMpi=Y
+# useMpi=N
+# useMpiArr is enabled
 #
 ###############################
 # If you chose Y for useMPI, specify the number of processors
 # Replace '4' with your number of processors, if that is a different number
 numProcs=4
+# numProcsArr is enabled
 ##
 ###############################
 ## Will you be running your simulation using CUDA?
 ## We expect that more users will have ready access to plain MPI than to CUDA,
 ##       so we set the default to be no.
-useCUDA=N
-# useCUDA=Y
+useCuda=N
+# useCuda=Y
+# useCudaArr is enabled
 ##
 ###############################
 ## Would you like this script to print out the job submission commands?
@@ -135,12 +195,13 @@ outputFileName='details.log'
 statusFileName='status.log'
 ##  
 ###############################
-## The allowOverwrite variable controls whether the simulation will 
+## The allowOverwrites variable controls whether the simulation will 
 ##      overwrite any pre-existing files.
 ## It is useful to set it to 'N' if you don't want a restarted simulation
 ##      to overwrite files that were already begun. 
-allowOverwrite=Y
-# allowOverwrite=N
+allowOverwrites=Y
+# allowOverwrites=N
+# allowOverwritesArr is enabled
 ##
 ###############################
 ## If you are so inclined, you can change the output suffix, but these

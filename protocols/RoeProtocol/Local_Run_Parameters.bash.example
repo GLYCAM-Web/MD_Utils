@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
 mdEngine='pmemd'
-useMPI='Y'
+useMpi='Y'
 numProcs='4'
-useCUDA='N'
-allowOverwrite='N'
+useCuda='N'
+allowOverwrites='N'
 
 # To speed up simulations when you only want to test the workflow, uncomment this:
 # MDUtilsTestRunWorkflow='Yes'

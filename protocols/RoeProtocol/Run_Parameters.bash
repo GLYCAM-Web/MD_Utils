@@ -23,10 +23,10 @@ initialCoordFormat='Amber7Rst'   ## Amber 7 restart
 coordOutputFormat='NetCDF'  ## ntwo=2 ; much smaller files ; not human readable
 
 mdEngine='pmemd'
-useMPI='N'
+useMpi='N'
 numProcs=1
-useCUDA='Y'
-allowOverwrite='N'
+useCuda='Y'
+allowOverwrites='N'
 
 writeCommands='Yes'
 
@@ -58,8 +58,8 @@ Description=(
 	[relax09]='Relax full system, no restraints'
 	[produ10]='MD production run'
 	)
-declare -A MdExecutable
-MdExecutable=(
+declare -A mdEngineArr
+mdEngineArr=(
 	[min01]='pmemd'
 	[relax02]='pmemd'
 	[min03]='pmemd'
@@ -71,8 +71,8 @@ MdExecutable=(
 	[relax09]='pmemd'
 	[produ10]='pmemd'
 	)
-declare -A MdUseCuda
-MdUseCuda=(
+declare -A useCudaArr
+useCudaArr=(
 	[min01]='Y'
 	[relax02]='Y'
 	[min03]='Y'
@@ -84,8 +84,8 @@ MdUseCuda=(
 	[relax09]='Y'
 	[produ10]='Y'
 	)
-declare -A MdUseMPI
-MdUseMPI=(
+declare -A useMpiArr
+useMpiArr=(
 	[min01]='N'
 	[relax02]='N'
 	[min03]='N'
@@ -97,8 +97,8 @@ MdUseMPI=(
 	[relax09]='N'
 	[produ10]='N'
 	)
-declare -A MdAllowOverwrite
-MdAllowOverwrite=(
+declare -A allowOverwritesArr
+allowOverwritesArr=(
 	[min01]='N'
 	[relax02]='N'
 	[min03]='N'
@@ -111,8 +111,8 @@ MdAllowOverwrite=(
 	[produ10]='N'
 	)
 ## This can be defined if MPI is used
-#declare -A MdNumberOfProcessors
-#MdNumberOfProcessors=(
+#declare -A numProcsArr
+#numProcsArr=(
 #	[min01]=''
 #	[relax02]=''
 #	[min03]=''
@@ -125,8 +125,8 @@ MdAllowOverwrite=(
 #	[produ10]=''
 #	)
 ## This can be defined if needed
-#declare -A NormalFinishText
-#NormalFinishText=(
+#declare -A checkTextArr
+#checkTextArr=(
 #	[min01]=''
 #	[relax02]=''
 #	[min03]=''
@@ -138,8 +138,8 @@ MdAllowOverwrite=(
 #	[relax09]=''
 #	[produ10]=''
 #	)
-declare -A ReferenceCoordinates
-ReferenceCoordinates=(
+declare -A refCoordsArr
+refCoordsArr=(
 	[min01]='Initial'
 	[relax02]='Initial'
 	[min03]='Initial'

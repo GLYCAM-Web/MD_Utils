@@ -244,10 +244,10 @@ if [ -z "${arrayTester}" ] ; then
 	exit_if_not_array_yet_varied "${allowOverwrites}" "allowOverwrites"
 	declare -A allowOverwritesArr
 fi
-arrayTester="${nProcsArr[@]}"
+arrayTester="${numProcsArr[@]}"
 if [ -z "${arrayTester}" ] ; then
-	exit_if_not_array_yet_varied "${nProcs}" "nProcs"
-	declare -A nProcsArr
+	exit_if_not_array_yet_varied "${numProcs}" "numProcs"
+	declare -A numProcsArr
 fi
 arrayTester="${checkTextArr[@]}"
 if [ -z "${arrayTester}" ] ; then
@@ -288,8 +288,8 @@ for part in "${RunParts[@]}" ; do
 	if [ -z "${allowOverwriteArr[${part}]}" ] ; then
 		allowOverwriteArr[${part}]="${allowOverwrite}"
 	fi
-	if [ -z "${nProcsArr[${part}]}" ] ; then
-		nProcsArr[${part}]="${numProcs}"
+	if [ -z "${numProcsArr[${part}]}" ] ; then
+		numProcsArr[${part}]="${numProcs}"
 	fi
 	if [ -z "${refCoordsArr[${part}]}" ] ; then
 		refCoordsArr[${part}]="NONE"
@@ -338,7 +338,7 @@ for part in "${RunParts[@]}" ; do
 	fi
 
 	if [ "${useMpiArr[${part}]}" == "Y" ] ; then 
-		thisMdEngine="mpirun ${thisMdEngine}.MPI -np ${nProcsArr[${part}]} "
+		thisMdEngine="mpirun ${thisMdEngine}.MPI -np ${numProcsArr[${part}]} "
 	fi
 
 	if [ "${allowOverwriteArr[${part}]}" == "Y" ] ; then 
