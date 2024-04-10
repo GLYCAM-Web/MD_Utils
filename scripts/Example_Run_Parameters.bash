@@ -231,6 +231,12 @@ fi
 ##      It will do this using sed.  The input files will be changed in place.  
 ##	If you need to keep the original values, save backups.
 ##    
-testWorkflow=No
+##      Remember, you can always copy them back from the repo.
+##    
+## To change the number of steps to something other than 2, 
+##      set testWorkflowSteps to the desired value.
+##    
+testWorkflow="No"
+testWorkflowSteps="2"
 #testWorkflow=Yes
 ##

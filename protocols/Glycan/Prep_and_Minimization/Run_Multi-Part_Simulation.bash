@@ -142,8 +142,9 @@ fi
 ## WARNING: 
 ##       It will do this using sed.  The input files will be changed in place.  
 ##    
-testWorkflow=No
-#testWorkflow=Yes
+testWorkflow="No"
+#testWorkflow="Yes"
+#testWorkflowSteps="1"
 ##
 ################################################################################
 ## This is the end of the parameters that can be overridden.
@@ -160,6 +161,13 @@ fi
 if [ "${MDUtilsTestRunWorkflow}" == "Yes" ] ; then
 	testWorkflow=Yes
 fi
+if [ "${testWorkflow}"=="Yes" ] ; then
+	if [ "${testWorkflowSteps}zzz" == "zzz" ] ; then
+		testWorkflowSteps="1"
+	fi
+fi
+print_to_details_log "TEST WORKFLOW IS: ${testWorkflow}"
+print_to_details_log "TEST WORKFLOW STEPS IS: ${testWorkflowSteps}"
 ##
 # Start the ouput file
 echo "Beginning MD simulations on $(date)" | tee ${outputFileName}
@@ -301,10 +309,11 @@ while [ "${i}" -lt "${#runPrefix[@]}" ] ; do
 	#  Build the command for this phase
 	build_run_command ${i}
 	if [ "${testWorkflow}" == "Yes" ] ; then
-		sed -i s/maxcyc\ *=\ *[1-9][0-9]*/maxcyc\ =\ 1/ ${runPrefix[${i}]}.in 
-		sed -i s/ncyc\ *=\ *[1-9][0-9]*/ncyc\ =\ 1/ ${runPrefix[${i}]}.in 
-		sed -i s/nstlim\ *=\ *[1-9][0-9]*/nstlim\ =\ 1/ ${runPrefix[${i}]}.in 
-		sed -i s/ntwr\ *=\ *[1-9][0-9]*/ntwr\ =\ 1/ ${runPrefix[${i}]}.in 
+		steps="${testWorkflowSteps}"
+		sed -i s/maxcyc\ *=\ *[1-9][0-9]*/maxcyc\ =\ ${steps}/ ${runPrefix[${i}]}.in 
+		sed -i s/ncyc\ *=\ *[1-9][0-9]*/ncyc\ =\ ${steps}/ ${runPrefix[${i}]}.in 
+		sed -i s/nstlim\ *=\ *[1-9][0-9]*/nstlim\ =\ ${steps}/ ${runPrefix[${i}]}.in 
+		sed -i s/ntwr\ *=\ *[1-9][0-9]*/ntwr\ =\ ${steps}/ ${runPrefix[${i}]}.in 
 	fi
 	#
 	#  Write it to a file if desired

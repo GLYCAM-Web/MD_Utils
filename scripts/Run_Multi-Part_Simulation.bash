@@ -150,9 +150,15 @@ else
 	print_error_and_exit "Simulation ended with GW_RUN_PARAMETERS error" 
 fi
 if [ "${MDUtilsTestRunWorkflow}" == "Yes" ] ; then
-	testWorkflow=Yes
+	testWorkflow="Yes"
+fi
+if [ "${testWorkflow}"=="Yes" ] ; then
+	if [ "${testWorkflowSteps}zzz" == "zzz" ] ; then
+		testWorkflowSteps="2"
+	fi
 fi
 print_to_details_log "TEST WORKFLOW IS: ${testWorkflow}"
+print_to_details_log "TEST WORKFLOW STEPS IS: ${testWorkflowSteps}"
 
 ################################################################################
 ## Checking for parameters that must be declared.
@@ -405,13 +411,14 @@ for part in ${RunParts[@]} ; do
 	COMMAND="${Commands[${part}]}"
 	
 	if [ "${testWorkflow}" == "Yes" ] ; then
-		sed -i s/maxcyc\ *=\ *[1-9][0-9]*/maxcyc\ =\ 2/ ${Prefix[${part}]}.in 
-		sed -i s/ncyc\ *=\ *[1-9][0-9]*/ncyc\ =\ 2/ ${Prefix[${part}]}.in 
-		sed -i s/nstlim\ *=\ *[1-9][0-9]*/nstlim\ =\ 2/ ${Prefix[${part}]}.in 
-		sed -i s/ntpr\ *=\ *[1-9][0-9]*/ntpr\ =\ 2/ ${Prefix[${part}]}.in 
-		sed -i s/ntwe\ *=\ *[1-9][0-9]*/ntwe\ =\ 2/ ${Prefix[${part}]}.in 
-		sed -i s/ntwx\ *=\ *[1-9][0-9]*/ntwx\ =\ 2/ ${Prefix[${part}]}.in 
-		sed -i -E s/ntwr\ *=\ *-?[1-9][0-9]*/ntwr\ =\ 2/ ${Prefix[${part}]}.in 
+		steps="${testWorkflowSteps}"
+		sed -i s/maxcyc\ *=\ *[1-9][0-9]*/maxcyc\ =\ ${steps}/ ${Prefix[${part}]}.in 
+		sed -i s/ncyc\ *=\ *[1-9][0-9]*/ncyc\ =\ ${steps}/ ${Prefix[${part}]}.in 
+		sed -i s/nstlim\ *=\ *[1-9][0-9]*/nstlim\ =\ ${steps}/ ${Prefix[${part}]}.in 
+		sed -i s/ntpr\ *=\ *[1-9][0-9]*/ntpr\ =\ ${steps}/ ${Prefix[${part}]}.in 
+		sed -i s/ntwe\ *=\ *[1-9][0-9]*/ntwe\ =\ ${steps}/ ${Prefix[${part}]}.in 
+		sed -i s/ntwx\ *=\ *[1-9][0-9]*/ntwx\ =\ ${steps}/ ${Prefix[${part}]}.in 
+		sed -i -E s/ntwr\ *=\ *-?[1-9][0-9]*/ntwr\ =\ ${steps}/ ${Prefix[${part}]}.in 
 	fi
 	#
 	#  Write it to a file if desired

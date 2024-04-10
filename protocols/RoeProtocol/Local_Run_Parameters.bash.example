@@ -6,8 +6,11 @@ numProcs='4'
 useCuda='N'
 allowOverwrites='N'
 
-# To speed up simulations when you only want to test the workflow, uncomment this:
+## To speed up simulations when you only want to test the workflow, set this environment variable:
 # MDUtilsTestRunWorkflow='Yes'
+## Alternatively, uncomment these two lines and change testWorkflowSteps as desired.
+# testWorkflow="Yes"
+# testWorkflowSteps="2"
 
 #writeCommands=Only
 #refCoords='NONE'
