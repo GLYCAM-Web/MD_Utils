@@ -227,6 +227,7 @@ AMBERHOME=${thisAMBERHOME}
 if [ -e ${AMBERHOME}/amber.sh ] ; then
 	source ${AMBERHOME}/amber.sh
 fi
+export AMBERHOME
 
 #########
 ######### If we made it this far, declare any undefined arrays.
@@ -380,6 +381,7 @@ for part in "${RunParts[@]}" ; do
 	Commands[${part}]="${COMMAND}"
 
 	thisRestart=${Prefix[${part}]}.${restrtSuffix}
+	thisTraj=${Prefix[${part}]}.${mdSuffix}
 
 	i=$((i+1))
 done
@@ -451,3 +453,36 @@ The simulation cannot continue.
 done
 
 print_to_both_logs "Simulation finished normally." 
+
+print_to_both_logs "About to do post-processing, if any is found." 
+
+print_to_both_logs "About to strip solvent and ions and  align solvent."
+COMMAND="${AMBERHOME}/bin/cpptraj -p ${PRMTOP} -y ${thisTraj} -i Strip_Solvent_Ions.cpptraj.in"
+#
+#  Write it to a file if desired
+if [ "${writeCommands}" != "No" ] ; then
+	print_to_details_log "
+	The command is:
+	${COMMAND}
+
+	" 
+fi
+#
+#  Run the command unless told not to 
+if [ "${writeCommands}" != "Only" ] ; then
+	print_to_status_log "$(date) : Starting post processing strip/align of trajectory.." >> ${statusFileName}
+	#
+	# Check if the command worked
+	if !  eval ${COMMAND} ; then
+		print_to_details_log "
+
+Something went wrong for stripping and aligning.
+"  
+		print_to_status_log "Simulation has failed to strip/align trajectory." 
+	else 
+		print_to_both_logs "Stripping and alining the trajectory finished normally." 
+	fi
+fi
+# TODO - add check for presence of solute-only parm7 file and attempt to make one if not.
+
+

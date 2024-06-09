@@ -1,0 +1,5 @@
+strip :WAT,Na+,Cl- nobox 
+outtraj MD_unsolvated.nc
+rmsd &!(@H=) out MD_unsolvated_rmsd.txt
+trajout MD_unsolvted_aligned.nc
+go
