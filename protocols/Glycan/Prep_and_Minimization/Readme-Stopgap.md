@@ -34,6 +34,3 @@ The file mentioned above was copied into this location in the `MD_Utils` repo:
     MD_Utils/protocols/Glycan/Prep_and_Minimization
 
 A line was added to each `*.leapin` file so that its contents would be loaded.
-
-## Adding GLYCAM_06j-1_GAGS_KDN.prep
-This contains a lot of extra prep files that aren't in AMBER yet but can be built on the website. Having it be in each output folder is bad because it's 5MB, but I need this fix fast.

@@ -1,7 +1,6 @@
 verbosity 0
 logfile unminimized-gas.leaplog
 source leaprc.GLYCAM_06j-1 
-loadamberprep GLYCAM_06j-1_GAGS_KDN.prep
 loadamberparams frcmod.glycam06_intraring_doublebond_protonatedacids
 loadoff structure.off 
 ## 
