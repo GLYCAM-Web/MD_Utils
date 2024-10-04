@@ -179,7 +179,7 @@ if [ "${MDUtilsTestRunWorkflow}" == "Yes" ] ; then
 fi
 if [ "${testWorkflow}"=="Yes" ] ; then
 	if [ "${testWorkflowSteps}zzz" == "zzz" ] ; then
-		testWorkflowSteps="2000"
+		testWorkflowSteps="2"
 	fi
 fi
 print_to_details_log "TEST WORKFLOW IS: ${testWorkflow}"
