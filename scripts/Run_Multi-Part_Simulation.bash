@@ -91,10 +91,9 @@ print_to_status_log() {
         fi
 }
 # Oliver's production step time predictor. This will break if a file name or step size changes. 
-# One could figure out the file name and pass it in. Not this one tho.
 predict_time_to_complete() {
-print_to_status_log "Bingo"
-
+ # One could figure out the file name and pass it in, but requires saving previous step.
+ # If this ever becomes an issue then figure it out then.
 previousStepInfoFileName=09.relax.o
 currentStepInputFileName=10.produ.in
 
@@ -103,17 +102,16 @@ stepsRequested=$(grep "nstlim" $currentStepInputFileName | cut -d = -f2 | sed 's
 
 checkIsNumber='^[0-9]+([.][0-9]+)?$'
 if ! [[ $msPerStep =~ $checkIsNumber ]]; then
-	print_to_status_log "Problem getting timing info from $previousStepInfoFileName as variable is $msPerStep"
+	print_to_status_log "Problem getting timing info from $previousStepInfoFileName as variable msPerStep ($msPerStep) is not a number $msPerStep"
 	return 1
 fi
 if ! [[ $stepsRequested =~ $checkIsNumber ]]; then
-        print_to_status_log "Problem getting steps requested from $currentStepInputFileName as variable is $stepsRequested"
+        print_to_status_log "Problem getting steps requested from $currentStepInputFileName as variable stepsRequested ($stepsRequested) is not a number."
         return 1
 fi
+
 msToComplete=$(awk -va=$stepsRequested -vb=$msPerStep 'BEGIN{printf "%.2f" , a * b}')
-print_to_status_log "msToComplete = $msToComplete"
 secondsToComplete=$(awk -vm=$msToComplete 'BEGIN{printf "%.0f" , m / 1000}')
-print_to_status_log "secondsToComplete = $secondsToComplete"
 print_to_status_log "Predicted time to finish is $(( $secondsToComplete / 60 ))m $(( $secondsToComplete % 60 ))s."
 }
 
@@ -181,7 +179,7 @@ if [ "${MDUtilsTestRunWorkflow}" == "Yes" ] ; then
 fi
 if [ "${testWorkflow}"=="Yes" ] ; then
 	if [ "${testWorkflowSteps}zzz" == "zzz" ] ; then
-		testWorkflowSteps="2"
+		testWorkflowSteps="2000"
 	fi
 fi
 print_to_details_log "TEST WORKFLOW IS: ${testWorkflow}"
