@@ -90,6 +90,33 @@ print_to_status_log() {
 		echo "$(date) : ${1}" >> ${statusFileName}
         fi
 }
+# Oliver's production step time predictor. This will break if a file name or step size changes. 
+# One could figure out the file name and pass it in. Not this one tho.
+predict_time_to_complete() {
+print_to_status_log "Bingo"
+
+previousStepInfoFileName=09.relax.o
+currentStepInputFileName=10.produ.in
+
+msPerStep=$(grep "Per Step(ms)" $previousStepInfoFileName | tail -n1 | cut -d = -f 3 | sed 's/ //g') 2>/dev/null
+stepsRequested=$(grep "nstlim" $currentStepInputFileName | cut -d = -f2 | sed 's/,//g' | sed 's/ //g') 2>/dev/null
+
+checkIsNumber='^[0-9]+([.][0-9]+)?$'
+if ! [[ $msPerStep =~ $checkIsNumber ]]; then
+	print_to_status_log "Problem getting timing info from $previousStepInfoFileName as variable is $msPerStep"
+	return 1
+fi
+if ! [[ $stepsRequested =~ $checkIsNumber ]]; then
+        print_to_status_log "Problem getting steps requested from $currentStepInputFileName as variable is $stepsRequested"
+        return 1
+fi
+msToComplete=$(awk -va=$stepsRequested -vb=$msPerStep 'BEGIN{printf "%.2f" , a * b}')
+print_to_status_log "msToComplete = $msToComplete"
+secondsToComplete=$(awk -vm=$msToComplete 'BEGIN{printf "%.0f" , m / 1000}')
+print_to_status_log "secondsToComplete = $secondsToComplete"
+print_to_status_log "Predicted time to finish is $(( $secondsToComplete / 60 ))m $(( $secondsToComplete % 60 ))s."
+}
+
 # print_to_details_log ${Info} 
 print_to_details_log() {
         if [ -z "${1}" ] ; then
@@ -432,7 +459,12 @@ for part in ${RunParts[@]} ; do
 	#
 	#  Run the command unless told not to 
 	if [ "${writeCommands}" != "Only" ] ; then
-		print_to_status_log "$(date) : Starting phase ${part}." >> ${statusFileName}
+		print_to_status_log "Starting phase ${part}." >> ${statusFileName}
+		SECONDS=0 # Oliver adding timing. SECONDS will increment by itself. See SECONDS usage below.
+		#Oliver timing prediction for produ
+		if [ "${part}" == "produ10" ]; then
+		    predict_time_to_complete
+		fi
 		eval ${COMMAND}
 		#
 		# Check if the command worked
@@ -445,7 +477,7 @@ The simulation cannot continue.
 			print_to_status_log "Simulation has failed on phase ${part}." 
 			print_error_and_exit "Simulation finished with MD error." 
 		fi
-		print_to_both_logs "Phase ${part} finished normally." 
+		print_to_both_logs "Phase ${part} finished normally after $(( SECONDS / 60 ))m $(( SECONDS % 60 ))s." 
 	fi
 
 done
