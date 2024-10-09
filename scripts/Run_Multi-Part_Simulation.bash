@@ -177,6 +177,10 @@ fi
 if [ "${MDUtilsTestRunWorkflow}" == "Yes" ] ; then
 	testWorkflow="Yes"
 fi
+if [[ ${MDUtilsTestRunWorkflow} =~ ^[0-9]+$ ]] && [ "${MDUtilsTestRunWorkflow}" -gt 0 ] ; then
+	testWorkflow="Yes"
+	testWorkflowSteps=${MDUtilsTestRunWorkflow}
+fi
 if [ "${testWorkflow}"=="Yes" ] ; then
 	if [ "${testWorkflowSteps}zzz" == "zzz" ] ; then
 		testWorkflowSteps="2"
@@ -436,6 +440,9 @@ for part in ${RunParts[@]} ; do
 	COMMAND="${Commands[${part}]}"
 	
 	if [ "${testWorkflow}" == "Yes" ] ; then
+		# Backup original file
+		cp "${Prefix[${part}]}".in "${Prefix[${part}]}".in.original
+
 		steps="${testWorkflowSteps}"
 		sed -i s/maxcyc\ *=\ *[1-9][0-9]*/maxcyc\ =\ ${steps}/ ${Prefix[${part}]}.in 
 		sed -i s/ncyc\ *=\ *[1-9][0-9]*/ncyc\ =\ ${steps}/ ${Prefix[${part}]}.in 
