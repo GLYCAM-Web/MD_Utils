@@ -440,8 +440,9 @@ for part in ${RunParts[@]} ; do
 	COMMAND="${Commands[${part}]}"
 	
 	if [ "${testWorkflow}" == "Yes" ] ; then
-		# Backup original file
-		cp "${Prefix[${part}]}".in "${Prefix[${part}]}".in.original
+		if [ ! -f "${Prefix[${part}]}.in.original" ] ; then
+			cp "${Prefix[${part}]}.in" "${Prefix[${part}]}.in.original"
+		fi
 
 		steps="${testWorkflowSteps}"
 		sed -i s/maxcyc\ *=\ *[1-9][0-9]*/maxcyc\ =\ ${steps}/ ${Prefix[${part}]}.in 
