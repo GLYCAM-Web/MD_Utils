@@ -183,7 +183,7 @@ if [[ ${MDUtilsTestRunWorkflow} =~ ^[0-9]+$ ]] && [ "${MDUtilsTestRunWorkflow}" 
 fi
 if [ "${testWorkflow}"=="Yes" ] ; then
 	if [ "${testWorkflowSteps}zzz" == "zzz" ] ; then
-		testWorkflowSteps="2"
+		testWorkflowSteps="1"
 	fi
 fi
 print_to_details_log "TEST WORKFLOW IS: ${testWorkflow}"
