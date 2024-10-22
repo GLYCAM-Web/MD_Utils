@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+mdEngine='pmemd'
+useMpi='Y'
+numProcs='4'
+useCuda='N'
+allowOverwrites='N'
+
+## To speed up simulations when you only want to test the workflow, set this environment variable:
+# MDUtilsTestRunWorkflow='Yes'
+## Alternatively, uncomment these two lines and change testWorkflowSteps as desired.
+# testWorkflow="Yes"
+# testWorkflowSteps="2"
+
+#writeCommands=Only
+#refCoords='NONE'
+
+#for i in ${RunParts[@]} ; do 
+#	echo "${i}"
+#	echo "${Prefix[${i}]}"
+#	echo "${Description[${i}]}"
+#	if [ "${refCoords}" == "NONE" ] ; then
+#		echo "There are no ReferenceCoordinates defined."
+#	else 
+#		echo "${refCoordsArr[${i}]}"
+#	fi
+#done

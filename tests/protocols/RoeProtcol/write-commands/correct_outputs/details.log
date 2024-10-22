@@ -1,0 +1,133 @@
+Details log begun on Tue Oct 22 10:43:27 AM EDT 2024
+TEST WORKFLOW IS: No
+TEST WORKFLOW STEPS IS: 1
+Beginning MD simulations on Tue Oct 22 10:43:27 AM EDT 2024
+Working directory is /home/lachele/WORK/GLYCAM_Dev_Env/V_2/Web_Programs/gems/External/MD_Utils/tests/protocols/RoeProtcol/write-commands/temp_test 
+Using info from file: './Run_Parameters.bash'. 
+Notice: The environment defines AMBERHOME as: /dev/null
+
+This script will use the following as AMBERHOME:
+AMBERHOME = ../../../../fake_amberhome
+
+
+AMBERHOME/amber.sh was sourced.  
+The output is between the two following strings of '=' signs:
+===============================================================
+this is a test of amberhome detection and setting.
+note that you did not actually source a proper amberhome/amber.sh file
+===============================================================
+
+
+There will be 10 phases to this simulation: 
+
+Phase 1 
+	- is called min01 
+	- has prefix 01.min 
+	- is described as: Minimize water and hydrogens, restraint_wt=5.0
+Phase 2 
+	- is called relax02 
+	- has prefix 02.relax 
+	- is described as: Relax water and hydrogens, restraint_wt=5.0
+Phase 3 
+	- is called min03 
+	- has prefix 03.min 
+	- is described as: Minimize water and hydrogens, restraint_wt=2.0
+Phase 4 
+	- is called min04 
+	- has prefix 04.min 
+	- is described as: Minimize water and hydrogens, restraint_wt=0.1
+Phase 5 
+	- is called min05 
+	- has prefix 05.min 
+	- is described as: Minimize all, no restraints
+Phase 6 
+	- is called relax06 
+	- has prefix 06.relax 
+	- is described as: Relax water and hydrogens, restraint_wt=1.0
+Phase 7 
+	- is called relax07 
+	- has prefix 07.relax 
+	- is described as: Relax water and hydrogens, restraint_wt=0.5
+Phase 8 
+	- is called relax08 
+	- has prefix 08.relax 
+	- is described as: Relax all except Glycan rings and protein backbone, restraint_wt=0.5
+Phase 9 
+	- is called relax09 
+	- has prefix 09.relax 
+	- is described as: Relax full system, no restraints
+Phase 10 
+	- is called produ10 
+	- has prefix 10.produ 
+	- is described as: MD production run
+
+	Starting phase min01
+
+		The command is:
+		mpirun pmemd.MPI -np 4  -O   -i 01.min.in  -o 01.min.o  -e 01.min.en  -p MdInput.parm7  -c MdInput.rst7  -r 01.min.restrt.nc  -x 01.min.nc  -inf 01.min.info  -l 01.min.log  -ref MdInput.rst7
+
+		
+
+	Starting phase relax02
+
+		The command is:
+		mpirun pmemd.MPI -np 4  -O   -i 02.relax.in  -o 02.relax.o  -e 02.relax.en  -p MdInput.parm7  -c 01.min.restrt.nc  -r 02.relax.restrt.nc  -x 02.relax.nc  -inf 02.relax.info  -l 02.relax.log  -ref MdInput.rst7
+
+		
+
+	Starting phase min03
+
+		The command is:
+		mpirun pmemd.MPI -np 4  -O   -i 03.min.in  -o 03.min.o  -e 03.min.en  -p MdInput.parm7  -c 02.relax.restrt.nc  -r 03.min.restrt.nc  -x 03.min.nc  -inf 03.min.info  -l 03.min.log  -ref MdInput.rst7
+
+		
+
+	Starting phase min04
+
+		The command is:
+		mpirun pmemd.MPI -np 4  -O   -i 04.min.in  -o 04.min.o  -e 04.min.en  -p MdInput.parm7  -c 03.min.restrt.nc  -r 04.min.restrt.nc  -x 04.min.nc  -inf 04.min.info  -l 04.min.log  -ref MdInput.rst7
+
+		
+
+	Starting phase min05
+
+		The command is:
+		mpirun pmemd.MPI -np 4  -O   -i 05.min.in  -o 05.min.o  -e 05.min.en  -p MdInput.parm7  -c 04.min.restrt.nc  -r 05.min.restrt.nc  -x 05.min.nc  -inf 05.min.info  -l 05.min.log 
+
+		
+
+	Starting phase relax06
+
+		The command is:
+		mpirun pmemd.MPI -np 4  -O   -i 06.relax.in  -o 06.relax.o  -e 06.relax.en  -p MdInput.parm7  -c 05.min.restrt.nc  -r 06.relax.restrt.nc  -x 06.relax.nc  -inf 06.relax.info  -l 06.relax.log  -ref 05.min.restrt.nc
+
+		
+
+	Starting phase relax07
+
+		The command is:
+		mpirun pmemd.MPI -np 4  -O   -i 07.relax.in  -o 07.relax.o  -e 07.relax.en  -p MdInput.parm7  -c 06.relax.restrt.nc  -r 07.relax.restrt.nc  -x 07.relax.nc  -inf 07.relax.info  -l 07.relax.log  -ref 05.min.restrt.nc
+
+		
+
+	Starting phase relax08
+
+		The command is:
+		mpirun pmemd.MPI -np 4  -O   -i 08.relax.in  -o 08.relax.o  -e 08.relax.en  -p MdInput.parm7  -c 07.relax.restrt.nc  -r 08.relax.restrt.nc  -x 08.relax.nc  -inf 08.relax.info  -l 08.relax.log  -ref 05.min.restrt.nc
+
+		
+
+	Starting phase relax09
+
+		The command is:
+		mpirun pmemd.MPI -np 4  -O   -i 09.relax.in  -o 09.relax.o  -e 09.relax.en  -p MdInput.parm7  -c 08.relax.restrt.nc  -r 09.relax.restrt.nc  -x 09.relax.nc  -inf 09.relax.info  -l 09.relax.log 
+
+		
+
+	Starting phase produ10
+
+		The command is:
+		mpirun pmemd.MPI -np 4  -O   -i 10.produ.in  -o 10.produ.o  -e 10.produ.en  -p MdInput.parm7  -c 09.relax.restrt.nc  -r 10.produ.restrt.nc  -x 10.produ.nc  -inf 10.produ.info  -l 10.produ.log 
+
+		
+Simulation finished normally.
