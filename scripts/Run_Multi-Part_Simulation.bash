@@ -165,7 +165,7 @@ exit_if_not_array_yet_varied() {
 ##
 # Start with clean logs.
 echo "Details log begun on $(date)" > ${detailsFileName}
-echo "$(date) : Simulation setup is starting." > ${statusFileName}
+echo "Simulation setup is starting." > ${statusFileName}
 
 if [ -f "${GW_RUN_PARAMETERS}" ] ; then
 	. ${GW_RUN_PARAMETERS}
