@@ -256,12 +256,16 @@ AMBERHOME = ${thisAMBERHOME}
 "
 export AMBERHOME=${thisAMBERHOME}
 if [ -e ${AMBERHOME}/amber.sh ] ; then
-	SH_Output="$(source ${AMBERHOME}/amber.sh 2>&1)"
 	print_to_details_log """
-AMBERHOME/amber.sh was sourced.  
-The output is between the two following strings of '=' signs:
+AMBERHOME/amber.sh will be sourced.  
+The output is between the two following strings of '=' signs.
+Emtpy output is normal.
 ===============================================================
-${SH_Output}
+"""
+	. ${AMBERHOME}/amber.sh >> ${detailsFileName} 2>&1
+	echo $PATH
+	#SH_Output="$(source ${AMBERHOME}/amber.sh 2>&1)"
+	print_to_details_log """
 ===============================================================
 """
 else
