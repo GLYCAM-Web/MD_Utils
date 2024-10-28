@@ -7,6 +7,7 @@
 *VERSIONS.sh
 protocols/Glycan/Prep_and_Minimization/Minimize-Parameters.bash
 *Local_Run_Parameters.bash
+*temp_test
 
 ##
 ####  2.  Wildcard patterns for system files

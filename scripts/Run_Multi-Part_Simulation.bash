@@ -229,7 +229,6 @@ fi
 detectAMBERHOME='No'
 if [ "${thisAMBERHOME}" == "DETECT" ] ; then 
 	detectAMBERHOME='Yes'
-	echo "WHY IS THIS HAPPENING?"
 	if [ "${amberhomeDefined}" == "Yes" ] ; then
 		thisAMBERHOME=${AMBERHOME}
 	else
@@ -273,8 +272,6 @@ Strong Warning
 Cannot find AMBERHOME/amber.sh
 This is likely to cause problems if this is an attempt to actually run a 
 simulation (as opposed to a test of the script, for example).
-The script thinks that the following is AMBERHOME:
-${thisAMBERHOME}
 """ 
 fi
 
