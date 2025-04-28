@@ -26,6 +26,18 @@ testWorkflow=No   ## Environment variable:  MDUtilsTestRunWorkflow
 ##
 ################################################################################
 
+WORKDIR="$(pwd)"
+
+MAKE_GW_ZIPS="False" # can be overridden in Minimize-Parameters.bash as needed
+if [ ! -z GW_DOMAIN ] ; then
+	MAKE_GW_ZIPS="True" # can be overridden in Minimize-Parameters.bash as needed
+	#cd ../../
+	#sequence_name="$(grep payload logs/request-raw.json | tr -d ' ' | tr -d '"' | cut -d ':' -f2)"
+	#project_zipname="${sequence_name}.zip"
+	#cd ${WORKDIR}
+	project_zipname="All_Builds.zip"
+fi
+
 if [ -f Minimize-Parameters.bash ] ; then
 	. Minimize-Parameters.bash
 fi
@@ -35,6 +47,11 @@ if [ "${MDUtilsTestRunWorkflow}" == "Yes" ] ; then
 fi
 if [ "${testWorkflow}" == "Yes" ] ; then
 	export MDUtilsTestRunWorkflow=Yes
+fi
+
+# If we should make zip files, declare the name of the project-level zip file
+if [ "${MAKE_GW_ZIPS}" == "True" ] ; then
+	echo "Project zipname is >>>${project_zipname}<<<" >> ${LOGFILE}
 fi
 
 write_return_value_info_to_log_status()
@@ -57,7 +74,16 @@ run_command_and_log_results()
 	returnValue=$?
 	write_return_value_info_to_log_status "${returnValue}" "${3}"
 }
-
+generate_current_directory_zipfile()
+{
+	conformer_name="$(basename ${WORKDIR})"
+	(cd ../ && zip -r ${conformer_name}/${conformer_name}.zip ${conformer_name} -x "/*.zip")
+}
+update_project_level_zipfile()
+{
+	#echo "Project zipname is >>>${project_zipname}<<<" >> ${LOGFILE}
+	(cd ../../ && zip -ru ${project_zipname} Requested_Builds -x "/*.zip")
+}
 
 ###  Initialize the log and status files
 echo "Run log begun on $(date) " > ${LOGFILE}
@@ -141,6 +167,20 @@ run_command_and_log_results \
 #	"Running cpptraj to convert t5p-solvated output to convenient formats"  \
 #	"cpptraj -i min-t5p.cpptrajin" \
 #	'Post-t5p-solvated cpptraj processing'
+
+
+# Generate zipfiles for the website if indicated
+if [ "${MAKE_GW_ZIPS}" == "True" ] ; then
+	run_command_and_log_results \
+		"Generating the zip file for the current directory: ${WORKDIR}"  \
+		"generate_current_directory_zipfile" \
+		'Conformer-level zip file creation'
+	run_command_and_log_results \
+		"Generating/updating the zip file for the entire project."  \
+		"update_project_level_zipfile" \
+		'Project-level zip file creation/updating'
+fi
+
 
 echo "
 Got to end of $0
