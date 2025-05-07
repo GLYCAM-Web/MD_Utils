@@ -10,8 +10,9 @@
 ##     *  set in a file called 'Minimize-Parameters.bash'
 ##
 ## The following parameters may be overridden in Minimize-Parameters.bash
-LOGFILE='Sequence-Prep-details.log'  ## Log file is very chatty, for tracking problems
-STATUSFILE='Sequence-Prep-status.log'  ## Status file is terse, with date/time stamps each line
+WORKDIR="$(pwd)"
+LOGFILE="${WORKDIR}/Sequence-Prep-details.log"  ## Log file is very chatty, for tracking problems
+STATUSFILE="${WORKDIR}/Sequence-Prep-status.log"  ## Status file is terse, with date/time stamps each line
 ##
 ## The following parameters may be overridden:
 ##     *  in Minimize-Parameters.bash
@@ -26,24 +27,23 @@ testWorkflow=No   ## Environment variable:  MDUtilsTestRunWorkflow
 ##
 ################################################################################
 
-WORKDIR="$(pwd)"
-
 MAKE_GW_ZIPS="False" # can be overridden in Minimize-Parameters.bash as needed
 if [ ! -z GW_DOMAIN ] ; then
 	MAKE_GW_ZIPS="True" # can be overridden in Minimize-Parameters.bash as needed
-	cd ../
-	project_dir_name="$(basename ${WORKDIR})"
-	seqID="$(grep seqID logs/response.json | tail -1 | tr -d ' ' | tr -d '"' | tr -d ',' | cut -d ':' -f2)"
+	cd ../../
+	project_dir_name="$(basename $(pwd))"
 	pUUID="$(grep pUUID logs/response.json | tail -1 | tr -d ' ' | tr -d '"' | tr -d ',' | cut -d ':' -f2)"
 	if [ "${project_dir_name}" != "${pUUID}" ] ; then
 		echo "INFO: The project directory name is not the same as the pUUID." >> ${LOGFILE}
 	        echo "INFO: Using the directory name for naming the zip archive.">> ${LOGFILE}
-		project_zipname="CB_project_${project_dir_name:0:8}_${seqID:0:8}_all.zip"
-		conformer_zip_prefix="CB_conformer_${project_dir_name:0:8}_${seqID:0:8}"
+	        echo "INFO: pUUID is given as: ${pUUID}">> ${LOGFILE}
+	        echo "INFO: project directory name is: ${project_dir_name}">> ${LOGFILE}
+		project_ID_name="${project_dir_name:0:8}"
 	else
-		project_zipname="CB_project_${pUUID:0:8}_${seqID:0:8}_all.zip"
-		conformer_zip_prefix="CB_conformer_${pUUID:0:8}_${seqID:0:8}"
+		project_ID_name="${pUUID:0:8}"
 	fi
+	project_zipname="CB_project_${project_ID_name}_all.zip"
+	conformer_zip_prefix="CB_project_${project_ID_name}_conformer"
 	cd ${WORKDIR}
 fi
 
@@ -89,13 +89,14 @@ run_command_and_log_results()
 generate_current_directory_zipfile()
 {
 	conformer_dir_name="$(basename ${WORKDIR})"
-	(cd ../ && zip -r ${conformer_dir_name}/${conformer_zip_prefix}${conformer_dir_name}.zip ${conformer_dir_name} -x "/*.zip")
+	(cd ../ && zip -r ${conformer_dir_name}/${conformer_zip_prefix}_${conformer_dir_name}.zip ${conformer_dir_name} -x "/*.zip")
 }
 update_project_level_zipfile()
 {
 	#echo "Project zipname is >>>${project_zipname}<<<" >> ${LOGFILE}
-	(cd ../../ && zip -ru ${pUUID}/${project_zipname} ${pUUID}/Requested_Builds ${pUUID}/logs  -x "/*.zip")
+	(cd ../../../ && zip -ru ${project_dir_name}/${project_zipname} ${project_dir_name}/Requested_Builds ${project_dir_name}/logs  -x "/*.zip")
 }
+
 
 ###  Initialize the log and status files
 echo "Run log begun on $(date) " > ${LOGFILE}
@@ -197,3 +198,4 @@ fi
 echo "
 Got to end of $0
 " >> ${LOGFILE}
+
