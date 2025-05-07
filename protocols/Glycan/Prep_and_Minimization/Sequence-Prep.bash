@@ -31,16 +31,28 @@ WORKDIR="$(pwd)"
 MAKE_GW_ZIPS="False" # can be overridden in Minimize-Parameters.bash as needed
 if [ ! -z GW_DOMAIN ] ; then
 	MAKE_GW_ZIPS="True" # can be overridden in Minimize-Parameters.bash as needed
-	#cd ../../
-	#sequence_name="$(grep payload logs/request-raw.json | tr -d ' ' | tr -d '"' | cut -d ':' -f2)"
-	#project_zipname="${sequence_name}.zip"
-	#cd ${WORKDIR}
-	project_zipname="All_Builds.zip"
+	cd ../
+	project_dir_name="$(basename ${WORKDIR})"
+	seqID="$(grep seqID logs/response.json | tail -1 | tr -d ' ' | tr -d '"' | tr -d ',' | cut -d ':' -f2)"
+	pUUID="$(grep pUUID logs/response.json | tail -1 | tr -d ' ' | tr -d '"' | tr -d ',' | cut -d ':' -f2)"
+	if [ "${project_dir_name}" != "${pUUID}" ] ; then
+		echo "INFO: The project directory name is not the same as the pUUID." >> ${LOGFILE}
+	        echo "INFO: Using the directory name for naming the zip archive.">> ${LOGFILE}
+		project_zipname="CB_project_${project_dir_name:0:8}_${seqID:0:8}_all.zip"
+		conformer_zip_prefix="CB_conformer_${project_dir_name:0:8}_${seqID:0:8}"
+	else
+		project_zipname="CB_project_${pUUID:0:8}_${seqID:0:8}_all.zip"
+		conformer_zip_prefix="CB_conformer_${pUUID:0:8}_${seqID:0:8}"
+	fi
+	cd ${WORKDIR}
 fi
 
+# things can be overridden in this file if needed
 if [ -f Minimize-Parameters.bash ] ; then
 	. Minimize-Parameters.bash
 fi
+
+
 # Pass workflow information along if needed
 if [ "${MDUtilsTestRunWorkflow}" == "Yes" ] ; then
 	export MDUtilsTestRunWorkflow=Yes
@@ -76,13 +88,13 @@ run_command_and_log_results()
 }
 generate_current_directory_zipfile()
 {
-	conformer_name="$(basename ${WORKDIR})"
-	(cd ../ && zip -r ${conformer_name}/${conformer_name}.zip ${conformer_name} -x "/*.zip")
+	conformer_dir_name="$(basename ${WORKDIR})"
+	(cd ../ && zip -r ${conformer_dir_name}/${conformer_zip_prefix}${conformer_dir_name}.zip ${conformer_dir_name} -x "/*.zip")
 }
 update_project_level_zipfile()
 {
 	#echo "Project zipname is >>>${project_zipname}<<<" >> ${LOGFILE}
-	(cd ../../ && zip -ru ${project_zipname} Requested_Builds -x "/*.zip")
+	(cd ../../ && zip -ru ${pUUID}/${project_zipname} ${pUUID}/Requested_Builds ${pUUID}/logs  -x "/*.zip")
 }
 
 ###  Initialize the log and status files
