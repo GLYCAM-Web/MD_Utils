@@ -30,6 +30,7 @@ testWorkflow=No   ## Environment variable:  MDUtilsTestRunWorkflow
 MAKE_GW_ZIPS="False" # can be overridden in Minimize-Parameters.bash as needed
 if [ ! -z GW_DOMAIN ] ; then
 	MAKE_GW_ZIPS="True" # can be overridden in Minimize-Parameters.bash as needed
+	conformer_dir_name="$(basename ${WORKDIR})"
 	cd ../../
 	project_dir_name="$(basename $(pwd))"
 	pUUID="$(grep pUUID logs/response.json | tail -1 | tr -d ' ' | tr -d '"' | tr -d ',' | cut -d ':' -f2)"
@@ -43,7 +44,7 @@ if [ ! -z GW_DOMAIN ] ; then
 		project_ID_name="${pUUID:0:8}"
 	fi
 	project_zipname="CB_project_${project_ID_name}_all.zip"
-	conformer_zip_prefix="CB_project_${project_ID_name}_conformer"
+	conformer_zip_prefix="CB_project_${project_ID_name}_conformer_${conformer_dir_name}"
 	cd ${WORKDIR}
 fi
 
@@ -88,12 +89,14 @@ run_command_and_log_results()
 }
 generate_current_directory_zipfile()
 {
-	conformer_dir_name="$(basename ${WORKDIR})"
-	(cd ../ && zip -r ${conformer_dir_name}/${conformer_zip_prefix}_${conformer_dir_name}.zip ${conformer_dir_name} -x "/*.zip")
+	(cd ../ && zip -r ${conformer_dir_name}/${conformer_zip_prefix}_all.zip ${conformer_dir_name} -x "/*.zip")
+}
+generate_current_directory_solventfiles_zipfile()
+{
+	(cd ../ && zip -r ${conformer_dir_name}/${conformer_zip_prefix}_solvent_${1^^}_simfiles.zip ${conformer_dir_name}/unminimized-${1,,}*   -x "/*.zip")
 }
 update_project_level_zipfile()
 {
-	#echo "Project zipname is >>>${project_zipname}<<<" >> ${LOGFILE}
 	(cd ../../../ && zip -ru ${project_dir_name}/${project_zipname} ${project_dir_name}/Requested_Builds ${project_dir_name}/logs  -x "/*.zip")
 }
 
@@ -184,14 +187,23 @@ run_command_and_log_results \
 
 # Generate zipfiles for the website if indicated
 if [ "${MAKE_GW_ZIPS}" == "True" ] ; then
+	# simulation files (parm7/rst7 only) for the water models
+	for solvent in "T3P" "T5P" ; do
+		run_command_and_log_results \
+			"Generating/updating the zip file for ${solvent} simulation files."  \
+			"generate_current_directory_solventfiles_zipfile ${solvent}" \
+			'Simulation files for solvent zip-file creation/updating'
+	done
+	# all files for this conformer
 	run_command_and_log_results \
 		"Generating the zip file for the current directory: ${WORKDIR}"  \
 		"generate_current_directory_zipfile" \
-		'Conformer-level zip file creation'
+		'Conformer-level zip-file creation'
+	# create or update the files for the entire project
 	run_command_and_log_results \
 		"Generating/updating the zip file for the entire project."  \
 		"update_project_level_zipfile" \
-		'Project-level zip file creation/updating'
+		'Project-level zip-file creation/updating'
 fi
 
 
