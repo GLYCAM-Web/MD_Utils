@@ -34,8 +34,8 @@ if [ ! -z GW_DOMAIN ] ; then
 	cd ../../
 	PROJECT_DIR="$(pwd)"
 	project_dir_name="$(basename ${PROJECT_DIR})"
-	PROJECT_STATLOG="${PROJECT_DIR}/logs/status.log"
-	PROJECT_DEETLOG="${PROJECT_DIR}/logs/details.log"
+	PROJECT_STATLOG="${PROJECT_DIR}/zip-status.log"
+	PROJECT_DEETLOG="${PROJECT_DIR}/zip-details.log"
 	pUUID="$(grep pUUID logs/response.json | tail -1 | tr -d ' ' | tr -d '"' | tr -d ',' | cut -d ':' -f2)"
 	if [ "${project_dir_name}" != "${pUUID}" ] ; then
 		echo "INFO: The project directory name is not the same as the pUUID." >> ${LOGFILE}
@@ -78,13 +78,21 @@ write_return_value_info_to_log_status()
 	if [ ! -z "${3}" ] ; then
 		Write_Project_Logs="${3}"
 	fi
-	if [ "${Val}" != "0" ] ; then
+	if [ "${Val}" == "18" ] ; then
+		echo "...${Mess} failed with code ${Val}.  Ignoring" >> ${LOGFILE}
+		echo "[WARNING] - $(date) - ${Mess} for conformer ${conformer_dir_name} failed with code ${Val}" >> ${STATUSFILE}
+		if [ "${Write_Project_Logs}" == "True" ] ; then
+			echo "Process ${0} sends this message:" >> ${PROJECT_DEETLOG}
+			echo "...${Mess} failed with code ${Val}.  Ignoring" >> ${PROJECT_DEETLOG}
+			echo "[WARNING] - $(date) - ${Mess} for conformer ${conformer_dir_name} failed with code ${Val}" >> ${PROJECT_STATLOG}
+		fi
+	elif [ "${Val}" != "0" ] ; then
 		echo "...${Mess} failed with code ${Val}.  Exiting" >> ${LOGFILE}
-		echo "[ERROR] - $(date) - ${Mess} failed with code ${Val}" >> ${STATUSFILE}
+		echo "[ERROR] - $(date) - ${Mess} for conformer ${conformer_dir_name} failed with code ${Val}" >> ${STATUSFILE}
 		if [ "${Write_Project_Logs}" == "True" ] ; then
 			echo "Process ${0} sends this message:" >> ${PROJECT_DEETLOG}
 			echo "...${Mess} failed with code ${Val}.  Exiting" >> ${PROJECT_DEETLOG}
-			echo "[ERROR] - $(date) - ${Mess} failed with code ${Val}" >> ${PROJECT_STATLOG}
+			echo "[ERROR] - $(date) - ${Mess} for conformer ${conformer_dir_name} failed with code ${Val}" >> ${PROJECT_STATLOG}
 		fi
 		exit 1
 	else
@@ -92,8 +100,8 @@ write_return_value_info_to_log_status()
 		echo "[INFO] - $(date) - ${Mess} completed" >> ${STATUSFILE}
 		if [ "${Write_Project_Logs}" == "True" ] ; then
 			echo "Process ${0} sends this message:" >> ${PROJECT_DEETLOG}
-			echo "...${Mess} completed on $(date)" >> ${PROJECT_DEETLOG}
-			echo "[INFO] - $(date) - ${Mess} completed" >> ${PROJECT_STATLOG}
+			echo "...${Mess} for conformer ${conformer_dir_name} completed on $(date)" >> ${PROJECT_DEETLOG}
+			echo "[INFO] - $(date) - ${Mess} for conformer ${conformer_dir_name} completed" >> ${PROJECT_STATLOG}
 		fi
 	fi
 }
