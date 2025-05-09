@@ -32,7 +32,10 @@ if [ ! -z GW_DOMAIN ] ; then
 	MAKE_GW_ZIPS="True" # can be overridden in Minimize-Parameters.bash as needed
 	conformer_dir_name="$(basename ${WORKDIR})"
 	cd ../../
-	project_dir_name="$(basename $(pwd))"
+	PROJECT_DIR="$(pwd)"
+	project_dir_name="$(basename ${PROJECT_DIR})"
+	PROJECT_STATLOG="${PROJECT_DIR}/logs/status.log"
+	PROJECT_DEETLOG="${PROJECT_DIR}/logs/details.log"
 	pUUID="$(grep pUUID logs/response.json | tail -1 | tr -d ' ' | tr -d '"' | tr -d ',' | cut -d ':' -f2)"
 	if [ "${project_dir_name}" != "${pUUID}" ] ; then
 		echo "INFO: The project directory name is not the same as the pUUID." >> ${LOGFILE}
@@ -44,7 +47,7 @@ if [ ! -z GW_DOMAIN ] ; then
 		project_ID_name="${pUUID:0:8}"
 	fi
 	project_zipname="CB_project_${project_ID_name}_all.zip"
-	conformer_zip_prefix="CB_project_${project_ID_name}_conformer_${conformer_dir_name}"
+	conformer_zip_prefix="CB_conformer_${conformer_dir_name}"
 	cd ${WORKDIR}
 fi
 
@@ -69,15 +72,29 @@ fi
 
 write_return_value_info_to_log_status()
 {
+	Write_Project_Logs="False"
 	Val="${1}"  ## the return value
 	Mess="${2}"  ## the action message
+	if [ ! -z "${3}" ] ; then
+		Write_Project_Logs="${3}"
+	fi
 	if [ "${Val}" != "0" ] ; then
 		echo "...${Mess} failed with code ${Val}.  Exiting" >> ${LOGFILE}
 		echo "[ERROR] - $(date) - ${Mess} failed with code ${Val}" >> ${STATUSFILE}
+		if [ "${Write_Project_Logs}" == "True" ] ; then
+			echo "Process ${0} sends this message:" >> ${PROJECT_DEETLOG}
+			echo "...${Mess} failed with code ${Val}.  Exiting" >> ${PROJECT_DEETLOG}
+			echo "[ERROR] - $(date) - ${Mess} failed with code ${Val}" >> ${PROJECT_STATLOG}
+		fi
 		exit 1
 	else
 		echo "...${Mess} completed on $(date)" >> ${LOGFILE}
 		echo "[INFO] - $(date) - ${Mess} completed" >> ${STATUSFILE}
+		if [ "${Write_Project_Logs}" == "True" ] ; then
+			echo "Process ${0} sends this message:" >> ${PROJECT_DEETLOG}
+			echo "...${Mess} completed on $(date)" >> ${PROJECT_DEETLOG}
+			echo "[INFO] - $(date) - ${Mess} completed" >> ${PROJECT_STATLOG}
+		fi
 	fi
 }
 run_command_and_log_results()
@@ -85,19 +102,31 @@ run_command_and_log_results()
 	echo "${1} " >> ${LOGFILE}
         eval "${2}  >> ${LOGFILE} 2>&1"
 	returnValue=$?
-	write_return_value_info_to_log_status "${returnValue}" "${3}"
+	write_return_value_info_to_log_status "${returnValue}" "${3}" "${4}"
 }
 generate_current_directory_zipfile()
 {
-	(cd ../ && zip -r ${conformer_dir_name}/${conformer_zip_prefix}_all.zip ${conformer_dir_name} -x "/*.zip")
+	(cd ../ && zip -r \
+		${conformer_dir_name}/${conformer_zip_prefix}_all.zip \
+		${conformer_dir_name} \
+		-x "/*.zip")
 }
 generate_current_directory_solventfiles_zipfile()
 {
-	(cd ../ && zip -r ${conformer_dir_name}/${conformer_zip_prefix}_solvent_${1^^}_simfiles.zip ${conformer_dir_name}/unminimized-${1,,}*   -x "/*.zip")
+	(cd ../ && zip -r \
+		${conformer_dir_name}/${conformer_zip_prefix}_solvent_${1^^}_simfiles.zip \
+		${conformer_dir_name}/unminimized-${1,,}*   \
+		${conformer_dir_name}/min-gas.mol2 \
+		response.json \
+		-x "/*.zip")
 }
 update_project_level_zipfile()
 {
-	(cd ../../../ && zip -ru ${project_dir_name}/${project_zipname} ${project_dir_name}/Requested_Builds ${project_dir_name}/logs  -x "/*.zip")
+	(cd ../../../ && zip -ru \
+		${project_dir_name}/${project_zipname} \
+		${project_dir_name}/Requested_Builds \
+		${project_dir_name}/logs  \
+		-x "/*.zip")
 }
 
 
@@ -188,6 +217,9 @@ run_command_and_log_results \
 # Generate zipfiles for the website if indicated
 if [ "${MAKE_GW_ZIPS}" == "True" ] ; then
 	# simulation files (parm7/rst7 only) for the water models
+	if [ ! -e response.json ] ; then
+		ln -s ../../logs/response.json
+	fi
 	for solvent in "T3P" "T5P" ; do
 		run_command_and_log_results \
 			"Generating/updating the zip file for ${solvent} simulation files."  \
@@ -203,7 +235,9 @@ if [ "${MAKE_GW_ZIPS}" == "True" ] ; then
 	run_command_and_log_results \
 		"Generating/updating the zip file for the entire project."  \
 		"update_project_level_zipfile" \
-		'Project-level zip-file creation/updating'
+		'Project-level zip-file creation/updating' \
+		'True'
+	echo 
 fi
 
 
