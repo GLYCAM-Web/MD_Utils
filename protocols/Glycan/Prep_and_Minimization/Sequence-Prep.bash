@@ -11,8 +11,8 @@
 ##
 ## The following parameters may be overridden in Minimize-Parameters.bash
 WORKDIR="$(pwd)"
-LOGFILE="${WORKDIR}/Sequence-Prep-details.log"  ## Log file is very chatty, for tracking problems
-STATUSFILE="${WORKDIR}/Sequence-Prep-status.log"  ## Status file is terse, with date/time stamps each line
+LOGFILE="${WORKDIR}/Sequence_Prep_details.log"  ## Log file is very chatty, for tracking problems
+STATUSFILE="${WORKDIR}/Sequence_Prep_status.log"  ## Status file is terse, with date/time stamps each line
 ##
 ## The following parameters may be overridden:
 ##     *  in Minimize-Parameters.bash
@@ -34,14 +34,15 @@ if [ ! -z GW_DOMAIN ] ; then
 	cd ../../
 	PROJECT_DIR="$(pwd)"
 	project_dir_name="$(basename ${PROJECT_DIR})"
-	PROJECT_STATLOG="${PROJECT_DIR}/zip-status.log"
-	PROJECT_DEETLOG="${PROJECT_DIR}/zip-details.log"
+	PROJECT_STATLOG="${PROJECT_DIR}/zip_status.log"
+	PROJECT_DEETLOG="${PROJECT_DIR}/zip_details.log"
 	pUUID="$(grep pUUID logs/response.json | tail -1 | tr -d ' ' | tr -d '"' | tr -d ',' | cut -d ':' -f2)"
 	if [ "${project_dir_name}" != "${pUUID}" ] ; then
 		echo "INFO: The project directory name is not the same as the pUUID." >> ${LOGFILE}
 	        echo "INFO: Using the directory name for naming the zip archive.">> ${LOGFILE}
 	        echo "INFO: pUUID is given as: ${pUUID}">> ${LOGFILE}
 	        echo "INFO: project directory name is: ${project_dir_name}">> ${LOGFILE}
+	        echo "INFO: This message may be benign if this conformer processed before response.json exists.">> ${LOGFILE}
 		project_ID_name="${project_dir_name:0:8}"
 	else
 		project_ID_name="${pUUID:0:8}"
@@ -125,11 +126,90 @@ generate_current_directory_solventfiles_zipfile()
 		${conformer_dir_name}/${conformer_zip_prefix}_solvent_${1^^}_simfiles.zip \
 		${conformer_dir_name}/unminimized-${1,,}*   \
 		${conformer_dir_name}/min-gas.mol2 \
-		response.json \
+		${conformer_dir_name}/response.json \
 		-x "/*.zip")
+}
+am_I_the_last()
+{
+	## Get the list of New Builds
+	echo "Process ${0} sends this message:" >> ${PROJECT_DEETLOG}
+	echo "Processing of conformer ${conformer_dir_name} completed on $(date)" >> ${PROJECT_DEETLOG}
+	echo "[INFO] - $(date) - Processing for conformer ${conformer_dir_name} completed" >> ${PROJECT_STATLOG}
+	# Ensure that response.json exists
+	seconds_waited="0"
+	max_seconds="20"
+	grep_string="^}"
+	while [ "${seconds_waited}" -le "${max_seconds}" ] ; do
+		grep -q ${grep_string} ../../logs/response.json
+		if [ "$?" == "0" ] ; then
+			echo "about to break"
+			break
+		fi
+		seconds_waited="$((seconds_waited+1))"
+		if [ "${seconds_waited}" -ge "${max_seconds}" ] ; then
+			echo "Process ${0} sends this message:" >> ${PROJECT_DEETLOG}
+			echo "Conformer ${conformer_dir_name} timed out waiting for response.json" >> ${PROJECT_DEETLOG}
+			echo "Unable to generate the project-level zip file" >> ${PROJECT_DEETLOG}
+			echo "This warning might be benign for requests of large numbers of conformers" >> ${PROJECT_DEETLOG}
+			echo "[WARNING] - $(date) - ${conformer_dir_name} timed out waiting (${max_seconds} s) for response.json" >> ${PROJECT_STATLOG}
+			export I_Am_Last="False"
+			return 
+		fi
+	done
+#	echo "found response.json after ${seconds_waited} seconds"
+	Requested_Confs="$(grep conformerID ../../logs/response.json | tr -d ' ' | tr -d '"' | tr -d ',' | cut -d ':' -f2)"
+#	echo "Requested confs is: "
+#	echo ">>>${Requested_Confs}<<<"
+	Existing_Confs="$(/bin/ls -1 ../../Existing_Builds/ | grep -vw logs)"
+#	echo "Existing confs is: "
+#	echo ">>>${Existing_Confs}<<<"
+	# Get the list of conformers that are not expected to already exist
+	check_confs=""
+	for conformer in ${Requested_Confs} ; do
+#		echo "checking conformer >>>${conformer}<<<"
+#		echo "Checking against Existing Confs: >>>${Existing_Confs}<<<"
+		if [[ ${Existing_Confs} != *${conformer}* ]] ; then
+#			echo "found a not-match"
+			check_confs="${check_confs} ${conformer}"
+		fi
+	done
+#	echo "check confs is: "
+#	echo ">>>${check_confs}<<<"
+	# Get the last conformer in the zip status file that declared an end to processing (successful or not)
+	grep_string="Processing for conformer"
+#	echo "grep string is >>>${grep_string}<<<"
+	COMMAND="grep '${grep_string}' ${PROJECT_STATLOG}  | tail -1"
+#	echo "command is >>>${COMMAND}<<<"
+	Last_Conformer="$(eval ${COMMAND})"
+#	echo "Last Conformer is: "
+#	echo ">>>${Last_Conformer}<<<"
+	COMMAND="grep '${grep_string}' ${PROJECT_STATLOG}"
+	Done_Conformers="$(eval ${COMMAND})"
+#	echo "Done Conformers is: "
+#	echo ">>>${Done_Conformers}<<<"
+	# See if this one is the last one
+	I_Am_Last="False"
+#	echo "checking for ${conformer_dir_name} in ${Last_Conformer}"
+	if [[ ${Last_Conformer} == *${conformer_dir_name}* ]] ; then
+		I_Am_Last="True"
+#		echo "setting I am last to true"
+	fi
+	# still here? see if all the conformers have finished
+	for conformer in ${check_confs} ; do
+#		echo "checking for ${conformer} in ${Done_Conformers}"
+		if [[ ${Done_Conformers} != *${conformer}* ]] ; then
+			I_Am_Last="False"
+			break
+		fi
+	done
+	echo "Process ${0} sends this message:" >> ${PROJECT_DEETLOG}
+	echo "Conformer ${conformer_dir_name} was the last to finish? ${I_Am_Last}" >> ${PROJECT_DEETLOG}
+	export I_Am_Last
+	return 
 }
 update_project_level_zipfile()
 {
+	sleep 1 # allows other processes to finish writing log file entries
 	(cd ../../../ && zip -ru \
 		${project_dir_name}/${project_zipname} \
 		${project_dir_name}/Requested_Builds \
@@ -239,13 +319,23 @@ if [ "${MAKE_GW_ZIPS}" == "True" ] ; then
 		"Generating the zip file for the current directory: ${WORKDIR}"  \
 		"generate_current_directory_zipfile" \
 		'Conformer-level zip-file creation'
-	# create or update the files for the entire project
+	# check if this process should make the top-level zip file
+	# I_Am_Last="False"
 	run_command_and_log_results \
-		"Generating/updating the zip file for the entire project."  \
-		"update_project_level_zipfile" \
-		'Project-level zip-file creation/updating' \
-		'True'
-	echo 
+		"Checking if this process is the last one finished in the project."  \
+		"am_I_the_last" \
+		'Check for being the last sub-process'
+
+#echo "I am Last is ${I_Am_Last}"
+
+	if [ "${I_Am_Last}" == "True" ] ; then 
+		# create or update the files for the entire project
+		run_command_and_log_results \
+			"Generating/updating the zip file for the entire project."  \
+			"update_project_level_zipfile" \
+			'Project-level zip-file creation/updating' \
+			'True'
+	fi
 fi
 
 
