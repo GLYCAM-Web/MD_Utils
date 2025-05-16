@@ -38,11 +38,11 @@ if [ ! -z GW_DOMAIN ] ; then
 	PROJECT_DEETLOG="${PROJECT_DIR}/zip_details.log"
 	pUUID="$(grep pUUID logs/response.json | tail -1 | tr -d ' ' | tr -d '"' | tr -d ',' | cut -d ':' -f2)"
 	if [ "${project_dir_name}" != "${pUUID}" ] ; then
-		echo "INFO: The project directory name is not the same as the pUUID." >> ${LOGFILE}
-	        echo "INFO: Using the directory name for naming the zip archive.">> ${LOGFILE}
-	        echo "INFO: pUUID is given as: ${pUUID}">> ${LOGFILE}
-	        echo "INFO: project directory name is: ${project_dir_name}">> ${LOGFILE}
-	        echo "INFO: This message may be benign if this conformer processed before response.json exists.">> ${LOGFILE}
+		echo "INFO : The project directory name is not the same as the pUUID." >> ${LOGFILE}
+	        echo "INFO : Using the directory name for naming the zip archive.">> ${LOGFILE}
+	        echo "INFO : pUUID is given as: ${pUUID}">> ${LOGFILE}
+	        echo "INFO : project directory name is: ${project_dir_name}">> ${LOGFILE}
+	        echo "INFO : This message may be benign if this conformer processed before response.json exists.">> ${LOGFILE}
 		project_ID_name="${project_dir_name:0:8}"
 	else
 		project_ID_name="${pUUID:0:8}"
@@ -81,28 +81,28 @@ write_return_value_info_to_log_status()
 	fi
 	if [ "${Val}" == "18" ] ; then
 		echo "...${Mess} failed with code ${Val}.  Ignoring" >> ${LOGFILE}
-		echo "[WARNING] - $(date) - ${Mess} for conformer ${conformer_dir_name} failed with code ${Val}" >> ${STATUSFILE}
+		echo "[WARNING] : $(date) : ${Mess} for conformer ${conformer_dir_name} failed with code ${Val}" >> ${STATUSFILE}
 		if [ "${Write_Project_Logs}" == "True" ] ; then
 			echo "Process ${0} sends this message:" >> ${PROJECT_DEETLOG}
 			echo "...${Mess} failed with code ${Val}.  Ignoring" >> ${PROJECT_DEETLOG}
-			echo "[WARNING] - $(date) - ${Mess} for conformer ${conformer_dir_name} failed with code ${Val}" >> ${PROJECT_STATLOG}
+			echo "[WARNING] : $(date) : ${Mess} for conformer ${conformer_dir_name} failed with code ${Val}" >> ${PROJECT_STATLOG}
 		fi
 	elif [ "${Val}" != "0" ] ; then
 		echo "...${Mess} failed with code ${Val}.  Exiting" >> ${LOGFILE}
-		echo "[ERROR] - $(date) - ${Mess} for conformer ${conformer_dir_name} failed with code ${Val}" >> ${STATUSFILE}
+		echo "[ERROR] : $(date) : ${Mess} for conformer ${conformer_dir_name} failed with code ${Val}" >> ${STATUSFILE}
 		if [ "${Write_Project_Logs}" == "True" ] ; then
 			echo "Process ${0} sends this message:" >> ${PROJECT_DEETLOG}
 			echo "...${Mess} failed with code ${Val}.  Exiting" >> ${PROJECT_DEETLOG}
-			echo "[ERROR] - $(date) - ${Mess} for conformer ${conformer_dir_name} failed with code ${Val}" >> ${PROJECT_STATLOG}
+			echo "[ERROR] : $(date) : ${Mess} for conformer ${conformer_dir_name} failed with code ${Val}" >> ${PROJECT_STATLOG}
 		fi
 		exit 1
 	else
 		echo "...${Mess} completed on $(date)" >> ${LOGFILE}
-		echo "[INFO] - $(date) - ${Mess} completed" >> ${STATUSFILE}
+		echo "[INFO] : $(date) : ${Mess} completed" >> ${STATUSFILE}
 		if [ "${Write_Project_Logs}" == "True" ] ; then
 			echo "Process ${0} sends this message:" >> ${PROJECT_DEETLOG}
 			echo "...${Mess} for conformer ${conformer_dir_name} completed on $(date)" >> ${PROJECT_DEETLOG}
-			echo "[INFO] - $(date) - ${Mess} for conformer ${conformer_dir_name} completed" >> ${PROJECT_STATLOG}
+			echo "[INFO] : $(date) : ${Mess} for conformer ${conformer_dir_name} completed" >> ${PROJECT_STATLOG}
 		fi
 	fi
 }
@@ -134,7 +134,7 @@ am_I_the_last()
 	## Get the list of New Builds
 	echo "Process ${0} sends this message:" >> ${PROJECT_DEETLOG}
 	echo "Processing of conformer ${conformer_dir_name} completed on $(date)" >> ${PROJECT_DEETLOG}
-	echo "[INFO] - $(date) - Processing for conformer ${conformer_dir_name} completed" >> ${PROJECT_STATLOG}
+	echo "[INFO] : $(date) : Processing for conformer ${conformer_dir_name} completed" >> ${PROJECT_STATLOG}
 	# Ensure that response.json exists
 	seconds_waited="0"
 	max_seconds="20"
@@ -151,7 +151,7 @@ am_I_the_last()
 			echo "Conformer ${conformer_dir_name} timed out waiting for response.json" >> ${PROJECT_DEETLOG}
 			echo "Unable to generate the project-level zip file" >> ${PROJECT_DEETLOG}
 			echo "This warning might be benign for requests of large numbers of conformers" >> ${PROJECT_DEETLOG}
-			echo "[WARNING] - $(date) - ${conformer_dir_name} timed out waiting (${max_seconds} s) for response.json" >> ${PROJECT_STATLOG}
+			echo "[WARNING] : $(date) : ${conformer_dir_name} timed out waiting (${max_seconds} s) for response.json" >> ${PROJECT_STATLOG}
 			export I_Am_Last="False"
 			return 
 		fi
@@ -220,7 +220,7 @@ update_project_level_zipfile()
 
 ###  Initialize the log and status files
 echo "Run log begun on $(date) " > ${LOGFILE}
-echo "[INFO] - $(date) - Status log opened." > ${STATUSFILE}
+echo "[INFO] : $(date) : Status log opened." > ${STATUSFILE}
 
 ###  If we seem to be in a Slurm cluster, record some info
 ( 
@@ -229,7 +229,7 @@ command -V srun >/dev/null 2>&1 &&
   echo "This build appears to be running in a Slurm cluster.:" >> ${LOGFILE} 
   echo "The current host is $(hostname):" >> ${LOGFILE} 
   echo "The build will run on these hosts:" >> ${LOGFILE} 
-  echo "[INFO] - $(date) - This job is running in a Slurm cluster." >> ${STATUSFILE}
+  echo "[INFO] : $(date) : This job is running in a Slurm cluster." >> ${STATUSFILE}
   srun hostname -s | sort -u >slurm.hosts
   cat slurm.hosts >> ${LOGFILE}
   )
@@ -335,6 +335,9 @@ if [ "${MAKE_GW_ZIPS}" == "True" ] ; then
 			"update_project_level_zipfile" \
 			'Project-level zip-file creation/updating' \
 			'True'
+
+		echo "Processing completed on $(date) " >> ${PROJECT_DEETLOG}
+		echo "[INFO] : $(date) : Project completed" >> ${PROJECT_STATLOG}
 	fi
 fi
 
