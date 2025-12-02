@@ -19,6 +19,10 @@ STATUSFILE="${WORKDIR}/Sequence_Prep_status.log"  ## Status file is terse, with 
 ##     *  by setting an environment variable.
 ##           Note that the environment variable has a different name.
 ##
+## If vars must be reset or commands run after the AMBER workflows, put them in a
+## file with this name:
+##     Amber-Prolog.bash
+##
 # Set this one to 'Yes' if you don't want to perform a full simulation but
 # just want to make sure the workflow functions.  This makes the MD sims only
 # run for a single step each.
@@ -236,9 +240,9 @@ command -V srun >/dev/null 2>&1 &&
 )
 
 run_command_and_log_results \
-	"Sourcing amber.sh" \
+	"Sourcing amber.sh from ${AMBERHOME}" \
 	"source ${AMBERHOME}/amber.sh" \
-	"Sourcing of AMBERHOME[=${AMBERHOME}]/amber.sh"
+	"Sourcing of AMBERHOME[now=${AMBERHOME}]/amber.sh"
 
 echo "
 Building and minimizing the gas-phase system.
@@ -300,6 +304,12 @@ run_command_and_log_results \
 #	"Running cpptraj to convert t5p-solvated output to convenient formats"  \
 #	"cpptraj -i min-t5p.cpptrajin" \
 #	'Post-t5p-solvated cpptraj processing'
+
+
+# If post-amber processing must happen, put them in this file
+if [ -f Amber-Prolog.bash ] ; then
+	. Amber-Prolog.bash
+fi
 
 
 # Generate zipfiles for the website if indicated
