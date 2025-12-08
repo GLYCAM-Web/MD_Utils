@@ -307,8 +307,8 @@ run_command_and_log_results \
 
 
 # If post-amber processing must happen, put them in this file
-if [ -f Amber-Prolog.bash ] ; then
-	. Amber-Prolog.bash
+if [ -f Amber-Epilog.bash ] ; then
+	. Amber-Epilog.bash
 fi
 
 
