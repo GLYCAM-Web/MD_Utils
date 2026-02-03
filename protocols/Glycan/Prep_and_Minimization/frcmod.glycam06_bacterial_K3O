@@ -19,6 +19,15 @@ H1-Cg-Cy-C    1    0.10          0.0             3.         SCEE=1.0 SCNB=1.0 Pr
 Oh-Cg-Cy-C    1    0.1           0.0            -3          SCEE=1.0 SCNB=1.0 3-Hydroxy propanoate
               1    0.2           0.0            -2          SCEE=1.0 SCNB=1.0
               1   -2.5           0.0             1          SCEE=1.0 SCNB=1.0
+H1-Cg-Cy-Os   1    0.05          0.0             3.         SCEE=1.0 SCNB=1.0 Methoxyethane
+H2-Cg-Cy-Os   1    0.05          0.0             3.         SCEE=1.0 SCNB=1.0 Methoxyethane
+Oh-Cg-Cy-Oh   1   -0.10          0.0            -1.         SCEE=1.0 SCNB=1.0 2,3-propanediol, 2-methyl-2,3-butanediol, etc
+              1    0.95          0.0            -2.         SCEE=1.0 SCNB=1.0
+              1    0.55          0.0             3.         SCEE=1.0 SCNB=1.0
+Oh-Cg-Cy-Os   1   -1.10          0.0            -1.         SCEE=1.0 SCNB=1.0 Ether-Alcohols
+              1    0.25          0.0             2.         SCEE=1.0 SCNB=1.0
+Oh-Cg-Cy-Oy   1   -1.10          0.0            -1.         SCEE=1.0 SCNB=1.0 Ether-Alcohols - sialic acid only
+              1    0.25          0.0             2.         SCEE=1.0 SCNB=1.0
 
 IMPROPER
 
